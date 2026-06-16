@@ -1,0 +1,6 @@
+{
+  "_comment": "Mock pass/fail history + run times so flakiness/slow detection works without a real CI. One test should look flaky, one slow.",
+  "test_login_success": {"runs": 50, "fails": 1, "avg_seconds": 0.4},
+  "test_checkout_total": {"runs": 50, "fails": 18, "avg_seconds": 0.6},
+  "test_payment_gateway": {"runs": 50, "fails": 0, "avg_seconds": 42.0}
+}

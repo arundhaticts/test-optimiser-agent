@@ -1,0 +1,15 @@
+# Core orchestration
+langgraph
+langchain-core
+# LLM provider (Anthropic)
+anthropic
+# NLP layer
+sentence-transformers      # semantic embeddings / similarity
+spacy                      # tokenise, lemmatise, NER, keyword extraction
+scikit-learn               # clustering + TF-IDF for log triage
+# Vector store (local for the prototype)
+chromadb
+# Utilities
+pydantic
+python-dotenv
+pytest                     # for the tests/ folder

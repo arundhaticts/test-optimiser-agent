@@ -1,0 +1,8 @@
+{
+  "_comment": "Acceptance criteria to match tests against (would come from the User Story Analyser). Include at least one criterion with NO matching test so gap detection fires.",
+  "criteria": [
+    {"id": "AC-1", "text": "User can log in with valid credentials"},
+    {"id": "AC-2", "text": "Cart total includes tax"},
+    {"id": "AC-3", "text": "Password reset email is sent within 60s"}
+  ]
+}
