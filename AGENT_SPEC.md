@@ -1,4 +1,4 @@
-# Test Optimiser Agent — 15-Min Technical Walkthrough
+# Test Optimiser Agent
 
 > **Framework:** LangGraph · **Autonomy Level:** L3 · Goal-driven
 
