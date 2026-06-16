@@ -3,7 +3,9 @@ Assembles the LangGraph: registers nodes, wires edges, sets routing, compiles.
 
 MUST CONTAIN:
 - StateGraph(TestOptimiserState) construction.
-- add_node() for all 10 nodes (imported from src/nodes/).
+- add_node() for all 10 nodes (imported from src/nodes/), PLUS the two auxiliary
+  nodes from the diagram: 'revise' (in nodes/prioritisation) and 'drop_failing'
+  (in nodes/validation).
 - The linear analysis spine: START -> intake -> coverage -> redundancy
   -> retrieval -> scoring.
 - Conditional edge for the COVERAGE-FLOOR GATE (revise loop vs proceed).

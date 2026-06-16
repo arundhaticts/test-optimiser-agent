@@ -1,0 +1,19 @@
+# Secrets — copy .env.example to .env (never commit the real one)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Vector store / local prototype data
+.chroma/
+chroma/
+*.sqlite3
+
+# Agent run artifacts (output reports, checkpointer db)
+outputs/
+*.checkpoint
