@@ -1,8 +1,25 @@
 {
-  "_comment": "Acceptance criteria to match tests against (would come from the User Story Analyser). Include at least one criterion with NO matching test so gap detection fires.",
+  "_comment": "Acceptance criteria to match tests against. AC-1..AC-4 map to existing tests; the planted coverage GAP is 'AC-5' (\"Password reset email is sent within 60s\") \u2014 no test covers it.",
   "criteria": [
-    {"id": "AC-1", "text": "User can log in with valid credentials"},
-    {"id": "AC-2", "text": "Cart total includes tax"},
-    {"id": "AC-3", "text": "Password reset email is sent within 60s"}
+    {
+      "id": "AC-1",
+      "text": "User can log in with valid credentials"
+    },
+    {
+      "id": "AC-2",
+      "text": "User can log out of an active session"
+    },
+    {
+      "id": "AC-3",
+      "text": "Cart total includes tax"
+    },
+    {
+      "id": "AC-4",
+      "text": "Checkout creates an order"
+    },
+    {
+      "id": "AC-5",
+      "text": "Password reset email is sent within 60s"
+    }
   ]
 }

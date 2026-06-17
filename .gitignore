@@ -17,3 +17,9 @@ chroma/
 # Agent run artifacts (output reports, checkpointer db)
 outputs/
 *.checkpoint
+
+# Agent logs (observability — written by src/observability.py)
+logs/
+
+# Long-term memory store (per-project, written by src/memory/store.py)
+.agent_memory/

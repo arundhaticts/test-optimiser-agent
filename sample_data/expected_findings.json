@@ -1,50 +1,30 @@
 {
-  "_comment": "GOLDEN eval set (NOT training data). Pins the findings the agent should produce when run against this sample_data/ suite, criteria, and CI history. tests/test_graph_e2e.py asserts the agent's outputs contain these. Update deliberately if the sample data changes.",
-
-  "redundancy_flags": [
+  "_comment": "GOLDEN eval set (NOT an input). Derived from the generator's planted constants; assert the agent's findings against this.",
+  "duplicates": [
     {
-      "kind": "near_duplicate",
-      "cluster": ["test_login_success", "test_login_success_duplicate"],
-      "evidence": "Semantically near-identical; cluster above DUPLICATE_THRESHOLD.",
-      "expected_action": "merge"
+      "tests": [
+        "test_login_success",
+        "test_login_valid_credentials"
+      ],
+      "reason": "Both assert a successful login with valid credentials \u2014 semantically equivalent, different naming/wording."
     }
   ],
-
-  "flakiness_flags": [
+  "flaky": [
     {
-      "test_id": "test_checkout_total",
-      "kind": "flaky",
-      "evidence": "mock_ci_history: 18/50 fails = 0.36 fail-rate, above FLAKY_FAIL_RATE.",
-      "expected_action": "quarantine (reversible) — gated at HITL 1"
+      "test": "test_search_returns_results",
+      "fail_rate": 0.36
     }
   ],
-
-  "slow_flags": [
+  "slow": [
     {
-      "test_id": "test_payment_gateway",
-      "kind": "slow",
-      "evidence": "mock_ci_history: 42.0s avg, above SLOW_TEST_SECONDS.",
-      "expected_action": "re-tier out of smoke; candidate for optimisation"
+      "test": "test_payment_gateway_charges_card",
+      "avg_seconds": 42.0
     }
   ],
-
-  "coverage_map": {
-    "AC-1": ["test_login_success", "test_login_success_duplicate"],
-    "AC-2": ["test_checkout_total"]
-  },
-
   "coverage_gaps": [
     {
-      "criterion_id": "AC-3",
-      "text": "Password reset email is sent within 60s",
-      "evidence": "No test in the suite is semantically close (max-similarity below GAP_THRESHOLD).",
-      "expected_action": "generate test at Node 7 (gap_generation)"
+      "criterion_id": "AC-5",
+      "text": "Password reset email is sent within 60s"
     }
-  ],
-
-  "notes": {
-    "no_unapproved_removals": "Nothing here may be deleted automatically; all removals/merges are gated at HITL 1.",
-    "risk_areas_pinned": "If a run passes risk_areas, those tests must never appear in approved_removals.",
-    "coverage_floor": "Dropping the AC-1/AC-2 tests would breach the 0.80 target; coverage_floor_gate must route to 'revise'."
-  }
+  ]
 }

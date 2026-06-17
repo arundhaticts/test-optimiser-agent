@@ -1,8 +1,8 @@
 # Core orchestration
 langgraph
 langchain-core
-# LLM provider (Anthropic)
-anthropic
+# LLM provider (Google Gemini — Gemini 2.5 Flash)
+google-genai
 # NLP layer
 sentence-transformers      # semantic embeddings / similarity
 spacy                      # tokenise, lemmatise, NER, keyword extraction
@@ -13,3 +13,6 @@ chromadb
 pydantic
 python-dotenv
 pytest                     # for the tests/ folder
+# Demo API bridge (Phase 10) — serves the React frontend in frontend/
+fastapi                    # HTTP bridge: POST /runs, POST /runs/{id}/resume
+uvicorn                    # ASGI server (uvicorn api:app --reload)
