@@ -67,7 +67,7 @@ h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color
   box-shadow: var(--shadow);
 }
 /* ---------- start page (hero + form) ---------- */
-.input-wrap { max-width: 580px; margin: 48px auto; }
+.input-wrap { max-width: 860px; margin: 48px auto; }
 .hero { text-align: center; margin-bottom: 28px; }
 .hero-title { font-size: 2.1rem; margin: 0 0 12px; line-height: 1.15;
   background: linear-gradient(90deg, #ffffff 20%, #9db4ff); -webkit-background-clip: text;
@@ -78,19 +78,39 @@ h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color
   background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px; }
 .feat svg { color: var(--primary); }
 
-.input-panel { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.input-panel { margin: 0; display: flex; flex-direction: column; gap: 18px; }
 .input-panel h2 { margin: 0 0 4px; }
-.input-panel label { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--text-2); }
+/* 2 rows x 3 columns of fields */
+.input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 24px; }
+.input-panel label, .input-panel .field { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--text-2); }
 .input-panel input, .input-panel select {
   background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
   border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; font-weight: 400;
 }
 .input-panel input:focus, .input-panel select:focus { outline: none; border-color: var(--primary); }
+.input-panel .btn-primary { width: 100%; }
+.hint { font-size: 0.78rem; font-weight: 400; color: var(--muted); }
 
-.toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; font-weight: 600; color: var(--text-2); }
-.toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-.toggle-btn { background: var(--surface-2); color: var(--muted); border: none; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; }
+.toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: visible; align-self: flex-start; }
+.toggle-btn { position: relative; background: var(--surface-2); color: var(--muted); border: none; padding: 8px 16px; cursor: pointer; font-size: 0.85rem; border-radius: 7px; }
 .toggle-btn.active { background: var(--primary); color: #fff; font-weight: 600; }
+/* CSS-only tooltip below each Run mode option */
+.toggle-btn[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 280px; white-space: normal; text-align: center;
+  background: #1e2433; color: #fff; font-size: 0.75rem; font-weight: 400;
+  padding: 6px 10px; border-radius: 6px; z-index: 60; pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.toggle-btn[data-tip]:hover::before {
+  content: ""; position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-bottom-color: #1e2433; z-index: 60; pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .input-grid { grid-template-columns: 1fr; }
+}
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; justify-content: center;

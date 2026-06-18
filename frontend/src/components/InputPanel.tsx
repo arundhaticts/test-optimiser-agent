@@ -4,6 +4,11 @@ import type { Goal, RunMode, RunRequest } from "../types";
 
 const GOALS: Goal[] = ["speed", "coverage", "reliability", "cost"];
 
+const RUN_MODE_TIPS: Record<RunMode, string> = {
+  interactive: "You review and approve each of the 3 checkpoints in the browser.",
+  automated: "The agent auto-approves the recommended choices and runs straight through.",
+};
+
 export default function InputPanel({
   onRun,
   busy,
@@ -59,65 +64,70 @@ export default function InputPanel({
       <form className="panel input-panel" onSubmit={submit}>
         <h2>Run a test-suite analysis</h2>
 
-      <label>
-        Suite path
-        <input value={suitePath} onChange={(e) => setSuitePath(e.target.value)} required />
-      </label>
+        <div className="input-grid">
+          <label>
+            Suite path
+            <input value={suitePath} onChange={(e) => setSuitePath(e.target.value)} required />
+          </label>
 
-      <label>
-        Project ID
-        <input value={projectId} onChange={(e) => setProjectId(e.target.value)} required />
-      </label>
+          <label>
+            Project ID
+            <input value={projectId} onChange={(e) => setProjectId(e.target.value)} required />
+          </label>
 
-      <label>
-        Optimization goal
-        <select value={goal} onChange={(e) => setGoal(e.target.value as Goal)}>
-          {GOALS.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label>
+            Optimization goal
+            <select value={goal} onChange={(e) => setGoal(e.target.value as Goal)}>
+              {GOALS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <label>
-        Coverage target: <strong>{coveragePct}%</strong>
-        <input
-          type="number"
-          min={0}
-          max={100}
-          value={coveragePct}
-          onChange={(e) => setCoveragePct(Number(e.target.value))}
-        />
-      </label>
+          <label>
+            Coverage target
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={coveragePct}
+              onChange={(e) => setCoveragePct(Number(e.target.value))}
+            />
+          </label>
 
-      <label>
-        Risk areas <span className="muted">(comma-separated; pinned from removal)</span>
-        <input value={riskAreas} onChange={(e) => setRiskAreas(e.target.value)} />
-      </label>
+          <label>
+            <span>
+              Risk areas <span className="hint">(comma-separated)</span>
+            </span>
+            <input value={riskAreas} onChange={(e) => setRiskAreas(e.target.value)} />
+          </label>
 
-      <div className="toggle-row">
-        <span>Run mode</span>
-        <div className="toggle">
-          {(["interactive", "automated"] as RunMode[]).map((m) => (
-            <button
-              type="button"
-              key={m}
-              className={runMode === m ? "toggle-btn active" : "toggle-btn"}
-              onClick={() => setRunMode(m)}
-            >
-              {m}
-            </button>
-          ))}
+          <div className="field">
+            <span>Run mode</span>
+            <div className="toggle">
+              {(["interactive", "automated"] as RunMode[]).map((m) => (
+                <button
+                  type="button"
+                  key={m}
+                  className={runMode === m ? "toggle-btn active" : "toggle-btn"}
+                  onClick={() => setRunMode(m)}
+                  data-tip={RUN_MODE_TIPS[m]}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {error && <div className="banner banner-error">{error}</div>}
+        {error && <div className="banner banner-error">{error}</div>}
 
-      <button className="btn btn-primary" type="submit" disabled={busy}>
-        {busy ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
-        {busy ? "Running…" : "Run Analysis"}
-      </button>
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {busy ? <Loader2 className="spin" size={18} /> : <Play size={18} />}
+          {busy ? "Running…" : "Run Analysis"}
+        </button>
       </form>
     </div>
   );
