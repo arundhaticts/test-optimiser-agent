@@ -20,7 +20,7 @@ Usage in a node:
 
 import logging
 import logging.handlers
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 _LOG_DIR = Path(__file__).resolve().parents[1] / "logs"
@@ -65,7 +65,9 @@ def audit(node: str, event: str, level: int = logging.INFO, **details) -> dict:
     to state['audit_log']. `details` is any JSON-serialisable context (counts, ids,
     scores, decisions)."""
     entry = {
-        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        # Local system time (timezone-aware, e.g. +05:30) so the UI shows the wall-clock
+        # time on this machine, not UTC.
+        "ts": datetime.now().astimezone().isoformat(timespec="seconds"),
         "node": node,
         "event": event,
         "details": details,
