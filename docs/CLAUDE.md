@@ -94,7 +94,8 @@ These are the spec's Safety Controls; tests in [../tests/](../tests/) catch regr
 | Path | What it is |
 |------|-----------|
 | [../main.py](../main.py) | thin CLI entrypoint; builds the graph, drives interrupts from stdin |
-| [../api.py](../api.py) | thin FastAPI bridge (HTTP ↔ graph): `POST /runs`, `/runs/{id}/resume`, `GET /runs/{id}`, `/health` |
+| [../api.py](../api.py) | thin FastAPI bridge (HTTP ↔ graph): `POST /runs`, `/runs/{id}/resume`, `GET /runs/{id}`, `/health`. **Synchronous** (a POST blocks to the next checkpoint); wraps resume values as `{"__hitl__": …}` so empty approvals still resume |
+| [../frontend/](../frontend/) | the React demo UI (Vite + TS + axios + lucide). `api.ts` normalises backend shapes; `App.tsx` is the `input→running→hitl→results` state machine; components for the input panel, audit feed, 3 HITL cards, 4 result tabs. No agent logic |
 | [../src/state.py](../src/state.py) | `TestOptimiserState` TypedDict — the shape every node reads/writes |
 | [../src/config.py](../src/config.py) | every threshold + model name + feature flag; loads `.env`, injects `truststore`. **No magic numbers anywhere else.** |
 | [../src/llm.py](../src/llm.py) | the single Gemini client (`complete`, `llm_available`, `extract_json`, `load_prompt`); offline-safe |
@@ -103,10 +104,10 @@ These are the spec's Safety Controls; tests in [../tests/](../tests/) catch regr
 | [../src/nodes/](../src/nodes/) | the 10 work nodes (one file each) + `revise` & `coverage_floor_gate` (in `prioritisation.py`) + `route_after_validation` & `drop_failing` (in `validation.py`) + shared `_coverage_model.py` |
 | [../src/nlp/](../src/nlp/) | `embeddings`, `similarity`, `clustering`, `extraction` — deterministic backbone with offline fallbacks |
 | [../src/tools/](../src/tools/) | `tool_wrapper` + `repo_reader`, `test_parser`, `coverage_parser`, `ci_history`, `test_management`, `vector_store`, `sandbox` |
-| [../src/hitl/interrupts.py](../src/hitl/interrupts.py) | the 3 interrupt payload builders & HITL nodes; `is_protected` |
+| [../src/hitl/interrupts.py](../src/hitl/interrupts.py) | the 3 interrupt payload builders & HITL nodes; `is_protected`; `_decision()` unwraps the `{"__hitl__": …}` resume envelope |
 | [../src/memory/store.py](../src/memory/store.py) | long-term per-project store (prior decisions, protected/flaky tests) |
 | [../prompts/](../prompts/) | LLM prompt templates: `scoring_prompt.md`, `prioritisation_prompt.md`, `gap_generation_prompt.md` |
-| [../sample_data/](../sample_data/) | `generate_sample_data.py` (single source of truth) → `sample_suite/test_sample.py`, `mock_ci_history.json`, `sample_criteria.json`, and the golden `expected_findings.json` |
+| [../sample_data/](../sample_data/) | `generate_sample_data.py` (single source of truth) → `sample_suite/*.py` (23 tests in 5 files), `mock_ci_history.json`, `sample_criteria.json`, the golden `expected_findings.json`, and a detailed `README.md`. See that README for the full data flow |
 | [../tests/](../tests/) | `test_state`, `test_coverage_gate` (Blocker #2), `test_validation_loop` (Blocker #1), `test_graph_e2e` (golden-set regression), `conftest` |
 | [../learning/](../learning/) | 3 standalone LangGraph examples (counter → conditional branch → interrupt/resume) — learn the mechanics first |
 | [../logs/](../logs/), [../outputs/](../outputs/) | rotating run log; the four written deliverables |
@@ -148,8 +149,8 @@ These are the spec's Safety Controls; tests in [../tests/](../tests/) catch regr
 
 - **`sample_data/` golden files are generated, not hand-edited.** Change the planted
   constants in [../sample_data/generate_sample_data.py](../sample_data/generate_sample_data.py)
-  and re-run it — `test_sample.py`, the JSON fixtures, and `expected_findings.json` are all
-  derived from those constants and must stay in sync.
+  and re-run it — the `sample_suite/*.py` files, the JSON fixtures, `expected_findings.json`,
+  and `sample_data/README.md` are all derived from those constants and must stay in sync.
 - **[AGENT_SPEC.md](AGENT_SPEC.md) is the design authority.** Code follows the spec, not the
   other way around. Don't quietly diverge from it; if reality must differ (e.g. the Gemini
   migration), flag it and update the relevant doc.

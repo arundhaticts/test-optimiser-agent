@@ -117,15 +117,18 @@ python sample_data/generate_sample_data.py
 Regenerates the synthetic fixture from a single source of truth. Expect a summary like:
 
 ```
-Generated 12 tests into .../sample_suite/test_sample.py
-  near-duplicate pair : test_login_success <-> test_login_valid_credentials
-  flaky test          : test_search_returns_results (18/50 = 0.36)
-  slow test           : test_payment_gateway_charges_card (42.0s avg)
-  coverage gap        : AC-5 "Password reset email is sent within 60s"
+Generated 23 tests across 5 files in .../sample_suite
+  test_auth.py  5 | test_cart.py 6 | test_checkout.py 5 | test_search.py 4 | test_account.py 3
+Planted:
+  duplicate clusters : 2  (login pair, cart-add pair)
+  flaky              : test_search_returns_results, test_checkout_payment_retry
+  slow               : test_payment_gateway_charges_card, test_full_catalog_export
+  coverage gaps      : AC-6, AC-7
 ```
 
-This (re)writes `sample_suite/test_sample.py`, `mock_ci_history.json`,
-`sample_criteria.json`, and the golden `expected_findings.json` — all kept in sync.
+This (re)writes `sample_suite/*.py` (5 files), `mock_ci_history.json`, `sample_criteria.json`,
+the golden `expected_findings.json`, and `sample_data/README.md` — all kept in sync. See
+[../sample_data/README.md](../sample_data/README.md) for the full, detailed explanation.
 
 ---
 
@@ -158,14 +161,34 @@ The graph pauses **three times** for your approval (interactive mode). At each p
 On completion the four deliverables are written to `outputs/` and a summary prints. To run
 without prompts: `--run-mode automated` (auto-approves the recommended set).
 
-To drive it over HTTP instead (the demo backend):
+---
+
+## 9. Run the web UI (React + FastAPI)
+
+The full demo is two processes — the backend API and the React frontend.
+
+**Terminal 1 — backend:**
 ```powershell
-uvicorn api:app --reload      # then open http://127.0.0.1:8000/docs
+uvicorn api:app --reload          # serves http://127.0.0.1:8000  (docs at /docs)
 ```
+
+**Terminal 2 — frontend** (first time only: `npm install`):
+```powershell
+cd frontend
+npm install                       # one-time
+npm run dev                       # opens http://localhost:5173
+```
+
+In the browser: fill the form (defaults: suite `sample_data/sample_suite`, goal `speed`,
+coverage `80`, risk areas `payment`) → **Run Analysis** → approve the 3 checkpoints →
+read the 4 result tabs. CORS for `localhost:5173` is already enabled in `api.py`.
+
+> First run is ~20–30s at the scoring step (live Gemini) before checkpoint 1 — that's normal.
+> `npm run build` produces a production bundle in `frontend/dist/` if you want to serve it statically.
 
 ---
 
-## 9. Common install errors & fixes
+## 10. Common install errors & fixes
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|

@@ -101,6 +101,30 @@ regardless of redundancy/flakiness signals.
 
 ---
 
+## 4. Data inputs — what's per-run vs fixed
+
+| Input | How it's set | Notes |
+|-------|--------------|-------|
+| Test suite | `suite_path` (request) / `--suite` (CLI) | Fully configurable; any pytest folder. Defaults to `sample_data/sample_suite`. |
+| CI history | **fixed file** `sample_data/mock_ci_history.json` | Path is hard-coded in `src/tools/ci_history.py` — the request can't choose it. Replace the file's contents to use real data. |
+| Acceptance criteria | **fixed file** `sample_data/sample_criteria.json` | Path is hard-coded in `src/tools/test_management.py`. Replace the file's contents to use real criteria. |
+
+So pointing `suite_path` at a real repo analyses those tests but still scores them against the
+sample CI history/criteria. See [../sample_data/README.md](../sample_data/README.md) §4.
+
+## 5. Corporate TLS / proxies
+
+`src/config.py` injects `truststore` at import so HTTPS uses the **OS certificate store** —
+needed behind TLS-inspecting corporate proxies, or the Gemini call fails
+`CERTIFICATE_VERIFY_FAILED`. Ensure `truststore` is installed in the same venv that runs the
+app. No env var needed; it's automatic.
+
+Note: changing **any** value in `.env` (key or model) requires a **process restart** to take
+effect — `uvicorn --reload` watches `.py` files, not `.env`, and the key/client are read once
+at startup.
+
+---
+
 > ⚠️ **Warning — re-run the golden eval set after tuning.**
 > Changing any threshold changes what the agent flags. After editing `src/config.py` (or the
 > env overrides), re-run the golden eval set to confirm the known planted findings still fire:
