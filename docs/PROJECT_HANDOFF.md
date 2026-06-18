@@ -68,7 +68,8 @@ are an opt-in quality pass.
 Working environment + understanding of LangGraph before touching the agent.
 **Do:** create/activate `.venv`; `pip install -r requirements.txt`;
 `python -m spacy download en_core_web_sm` (only needed if you set `SPACY_NER=1`); copy
-`.env.example`→`.env`, add `GEMINI_API_KEY`; run the three `learning/` scripts in order
+create `.env` with `GEMINI_API_KEY` (see [INSTALL.md](INSTALL.md) §4); run the three
+`learning/` scripts in order
 (counter → conditional branch → interrupt/resume).
 **Exit check:** all three learning scripts run; you can explain how `interrupt()` pauses and
 resumes carrying the human's answer.

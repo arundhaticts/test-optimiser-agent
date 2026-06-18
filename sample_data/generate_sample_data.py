@@ -39,20 +39,21 @@ GAP_CRITERION = {"id": "AC-5", "text": "Password reset email is sent within 60s"
 #      NO password-reset test exists, so GAP_CRITERION (AC-5) is a true coverage gap. ----
 TESTS = [
     ("test_login_success",
-     "AC-1: a user with valid credentials is authenticated.",
+     "AC-1: logging in with valid credentials succeeds and authenticates the user.",
      ['users = {"alice": "s3cret"}',
       'def login(username, password):',
       '    return users.get(username) == password',
       'assert login("alice", "s3cret") is True',
       'assert login("alice", "wrong") is False']),
 
+    # Deliberate near-duplicate of test_login_success: a different name but the SAME
+    # behaviour and (near-)identical docstring, so the offline similarity clusters them.
     ("test_login_valid_credentials",
-     "AC-1: logging in with the correct password succeeds "
+     "AC-1: logging in with valid credentials succeeds and authenticates the user "
      "(near-duplicate of test_login_success).",
      ['accounts = {"alice": "s3cret"}',
       'def authenticate(user, pwd):',
       '    return accounts.get(user) == pwd',
-      '# Same behaviour as test_login_success, different wording.',
       'assert authenticate("alice", "s3cret") is True']),
 
     ("test_logout",

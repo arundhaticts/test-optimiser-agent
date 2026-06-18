@@ -11,7 +11,8 @@ LLM judgement is powered by **Google Gemini (`gemini-2.5-flash`)**; it also runs
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env          # add GEMINI_API_KEY (optional — runs offline without it)
+# create a .env with GEMINI_API_KEY (optional — runs offline without it)
+echo "GEMINI_API_KEY=your-key-here" > .env
 python main.py --suite sample_data/sample_suite --goal speed
 ```
 
@@ -37,7 +38,7 @@ test-optimiser-agent/
 ├── main.py                    ← thin CLI entrypoint
 ├── api.py                     ← thin FastAPI bridge (HTTP ↔ graph)
 ├── requirements.txt
-├── .env.example
+├── .env                       ← your local config/secrets (gitignored; create from the vars in docs/INSTALL.md)
 ├── docs/                      ← all project documentation
 │   ├── AGENT_SPEC.md
 │   ├── CLAUDE.md

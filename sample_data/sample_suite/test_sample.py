@@ -5,7 +5,7 @@
 # acceptance criterion AC-5 (password reset) has no test here -> coverage gap.
 
 def test_login_success():
-    """AC-1: a user with valid credentials is authenticated."""
+    """AC-1: logging in with valid credentials succeeds and authenticates the user."""
     users = {"alice": "s3cret"}
     def login(username, password):
         return users.get(username) == password
@@ -13,11 +13,10 @@ def test_login_success():
     assert login("alice", "wrong") is False
 
 def test_login_valid_credentials():
-    """AC-1: logging in with the correct password succeeds (near-duplicate of test_login_success)."""
+    """AC-1: logging in with valid credentials succeeds and authenticates the user (near-duplicate of test_login_success)."""
     accounts = {"alice": "s3cret"}
     def authenticate(user, pwd):
         return accounts.get(user) == pwd
-    # Same behaviour as test_login_success, different wording.
     assert authenticate("alice", "s3cret") is True
 
 def test_logout():

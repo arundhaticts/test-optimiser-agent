@@ -1,4 +1,4 @@
-# Secrets — copy .env.example to .env (never commit the real one)
+# Secrets — create a local .env (see docs/INSTALL.md §4); never commit the real one
 .env
 
 # Python

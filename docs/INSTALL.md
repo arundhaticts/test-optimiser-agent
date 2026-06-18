@@ -56,11 +56,25 @@ This installs LangGraph, the Gemini SDK (`google-genai`), FastAPI/uvicorn (demo 
 
 ## 4. Environment setup
 
-Copy the template and edit it:
+Create a `.env` file in the repo root (it's gitignored — never commit it) with the variables
+below. The minimum is your key:
 
 ```powershell
-Copy-Item .env.example .env      # macOS/Linux: cp .env.example .env
-notepad .env
+# minimum
+Set-Content .env "GEMINI_API_KEY=your-key-here"   # macOS/Linux: echo "GEMINI_API_KEY=your-key-here" > .env
+notepad .env                                       # add any of the optional vars below
+```
+
+A complete `.env` looks like:
+
+```ini
+GEMINI_API_KEY=your-key-here
+REASONING_MODEL=gemini-2.5-flash
+FAST_MODEL=gemini-2.5-flash
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+OFFLINE_MODE=0
+EMBED_ALLOW_DOWNLOAD=0
+SPACY_NER=0
 ```
 
 | Variable | Required? | Default | What it does |
