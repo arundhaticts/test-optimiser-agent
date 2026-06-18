@@ -1,5 +1,5 @@
 {
-  "_comment": "Acceptance criteria to match tests against. AC-1..AC-4 map to existing tests; the planted coverage GAP is 'AC-5' (\"Password reset email is sent within 60s\") \u2014 no test covers it.",
+  "_comment": "Acceptance criteria the suite is matched against (these would come from a User Story Analyser / Jira). AC-1..AC-5 map to existing tests; the planted coverage GAPS are: AC-6 (\"Password reset email is sent within 60s\"); AC-7 (\"Inventory stock levels update after each purchase\") \u2014 no test covers them.",
   "criteria": [
     {
       "id": "AC-1",
@@ -19,7 +19,15 @@
     },
     {
       "id": "AC-5",
+      "text": "Search returns matching products"
+    },
+    {
+      "id": "AC-6",
       "text": "Password reset email is sent within 60s"
+    },
+    {
+      "id": "AC-7",
+      "text": "Inventory stock levels update after each purchase"
     }
   ]
 }

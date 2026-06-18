@@ -112,6 +112,7 @@ export interface CoverageGap {
   text: string;
   max_similarity: number;
   risk: boolean;
+  addressed_by?: string; // id of an approved generated test that now drafts a fix
 }
 export interface CoverageGapMap {
   coverage_map: Record<string, string[]>;

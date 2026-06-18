@@ -1,9 +1,11 @@
-import { AlertCircle, CheckCircle2, CircleSlash } from "lucide-react";
+import { AlertCircle, CheckCircle2, CircleSlash, FileCheck2 } from "lucide-react";
 import type { CoverageGapMap } from "../../types";
 
 export default function CoverageMap({ data }: { data: CoverageGapMap }) {
   const rows = Object.entries(data.coverage_map);
   const pct = Math.round(data.projected_coverage * 100);
+  // criterion_id -> gap (so the table can show "drafted" for an addressed gap)
+  const gapById = Object.fromEntries(data.gaps.map((g) => [g.criterion_id, g]));
 
   return (
     <div className="section">
@@ -21,33 +23,42 @@ export default function CoverageMap({ data }: { data: CoverageGapMap }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map(([cid, tests]) => (
-            <tr key={cid}>
-              <td className="mono">{cid}</td>
-              <td>
-                {tests.length ? (
-                  tests.map((t) => (
-                    <span key={t} className="chip mono">
-                      {t}
+          {rows.map(([cid, tests]) => {
+            const addressedBy = gapById[cid]?.addressed_by;
+            return (
+              <tr key={cid}>
+                <td className="mono">{cid}</td>
+                <td>
+                  {tests.length ? (
+                    tests.map((t) => (
+                      <span key={t} className="chip mono">
+                        {t}
+                      </span>
+                    ))
+                  ) : addressedBy ? (
+                    <span className="chip mono chip-new">{addressedBy}</span>
+                  ) : (
+                    <span className="empty-state">no test covers this criterion</span>
+                  )}
+                </td>
+                <td>
+                  {tests.length ? (
+                    <span className="status-covered">
+                      <CheckCircle2 size={15} /> covered
                     </span>
-                  ))
-                ) : (
-                  <span className="empty-state">no test covers this criterion</span>
-                )}
-              </td>
-              <td>
-                {tests.length ? (
-                  <span className="status-covered">
-                    <CheckCircle2 size={15} /> covered
-                  </span>
-                ) : (
-                  <span className="status-gap">
-                    <CircleSlash size={15} /> gap
-                  </span>
-                )}
-              </td>
-            </tr>
-          ))}
+                  ) : addressedBy ? (
+                    <span className="status-drafted">
+                      <FileCheck2 size={15} /> gap · test drafted
+                    </span>
+                  ) : (
+                    <span className="status-gap">
+                      <CircleSlash size={15} /> gap
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -67,6 +78,13 @@ export default function CoverageMap({ data }: { data: CoverageGapMap }) {
             </div>
             <p>{g.text}</p>
             <span className="muted">best match: {g.max_similarity.toFixed(2)}</span>
+            {g.addressed_by && (
+              <div className="addressed">
+                <FileCheck2 size={14} /> Addressed by a generated test:{" "}
+                <span className="mono">{g.addressed_by}</span>{" "}
+                <span className="muted">(drafted — implement &amp; merge to close the gap)</span>
+              </div>
+            )}
           </div>
         ))
       )}

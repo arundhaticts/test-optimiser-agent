@@ -15,9 +15,20 @@ def report_node(state) -> dict:
     final = dict(state.get("final_outputs", {}))
 
     final["scorecard"] = state.get("scorecard", {})
+    # Mark gaps that an APPROVED generated test now addresses, so the coverage view
+    # reflects the human's decision. The criterion stays a "gap" (the drafted test isn't
+    # merged/verified yet) but is annotated with the test that addresses it.
+    approved_gen = [g for g in state.get("approved_generated_tests", []) if isinstance(g, dict)]
+    addressed = {g.get("criterion_id"): g.get("id") for g in approved_gen if g.get("criterion_id")}
+    gaps = []
+    for gp in state.get("coverage_gaps", []):
+        gp = dict(gp)
+        if gp.get("criterion_id") in addressed:
+            gp["addressed_by"] = addressed[gp["criterion_id"]]
+        gaps.append(gp)
     final["coverage_gap_map"] = {
         "coverage_map": state.get("coverage_map", {}),
-        "gaps": state.get("coverage_gaps", []),
+        "gaps": gaps,
         "projected_coverage": state.get("projected_coverage"),
     }
     final["redundancy_flakiness_report"] = {

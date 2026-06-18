@@ -1,30 +1,49 @@
 {
-  "_comment": "GOLDEN eval set (NOT an input). Derived from the generator's planted constants; assert the agent's findings against this.",
+  "_comment": "GOLDEN eval set (NOT an input). Derived from the generator's planted constants; the e2e test asserts the agent's findings against this.",
   "duplicates": [
     {
       "tests": [
         "test_login_success",
         "test_login_valid_credentials"
       ],
-      "reason": "Both assert a successful login with valid credentials \u2014 semantically equivalent, different naming/wording."
+      "reason": "Same behaviour, different name/wording \u2014 semantically equivalent."
+    },
+    {
+      "tests": [
+        "test_add_item_to_cart",
+        "test_cart_add_item"
+      ],
+      "reason": "Same behaviour, different name/wording \u2014 semantically equivalent."
     }
   ],
   "flaky": [
     {
       "test": "test_search_returns_results",
       "fail_rate": 0.36
+    },
+    {
+      "test": "test_checkout_payment_retry",
+      "fail_rate": 0.32
     }
   ],
   "slow": [
     {
       "test": "test_payment_gateway_charges_card",
       "avg_seconds": 42.0
+    },
+    {
+      "test": "test_full_catalog_export",
+      "avg_seconds": 19.0
     }
   ],
   "coverage_gaps": [
     {
-      "criterion_id": "AC-5",
+      "criterion_id": "AC-6",
       "text": "Password reset email is sent within 60s"
+    },
+    {
+      "criterion_id": "AC-7",
+      "text": "Inventory stock levels update after each purchase"
     }
   ]
 }

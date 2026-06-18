@@ -59,26 +59,30 @@ def test_audit_log_is_complete(outputs):
 def test_reproduces_golden_duplicate_cluster(outputs):
     clusters = [set(f["cluster"])
                 for f in outputs["redundancy_flakiness_report"]["redundancy_flags"]]
-    expected = set(GOLDEN["duplicates"][0]["tests"])
-    assert expected in clusters
+    for dup in GOLDEN["duplicates"]:
+        assert set(dup["tests"]) in clusters
 
 
 def test_reproduces_golden_flaky_and_slow(outputs):
     report = outputs["redundancy_flakiness_report"]
     flaky = {f["test_id"] for f in report["flakiness_flags"]}
     slow = {f["test_id"] for f in report["slow_flags"]}
-    assert GOLDEN["flaky"][0]["test"] in flaky
-    assert GOLDEN["slow"][0]["test"] in slow
+    for f in GOLDEN["flaky"]:
+        assert f["test"] in flaky
+    for s in GOLDEN["slow"]:
+        assert s["test"] in slow
 
 
 def test_reproduces_golden_coverage_map_and_gap(outputs):
     cgm = outputs["coverage_gap_map"]
-    gap_id = GOLDEN["coverage_gaps"][0]["criterion_id"]
-    gap_ids = {g["criterion_id"] for g in cgm["gaps"]}
-    assert gap_id in gap_ids                          # the planted gap is detected
-    assert cgm["coverage_map"].get(gap_id) == []      # ...and has no covering test
-    # every other criterion is covered by at least one test
-    others = {cid: tests for cid, tests in cgm["coverage_map"].items() if cid != gap_id}
+    detected_gaps = {g["criterion_id"] for g in cgm["gaps"]}
+    golden_gaps = {g["criterion_id"] for g in GOLDEN["coverage_gaps"]}
+    # every planted gap is detected and has no covering test
+    for gid in golden_gaps:
+        assert gid in detected_gaps
+        assert cgm["coverage_map"].get(gid) == []
+    # every non-gap criterion is covered by at least one test
+    others = {cid: tests for cid, tests in cgm["coverage_map"].items() if cid not in golden_gaps}
     assert others and all(len(tests) >= 1 for tests in others.values())
 
 

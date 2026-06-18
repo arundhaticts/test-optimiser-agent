@@ -1,5 +1,5 @@
 {
-  "_comment": "Mock pass/fail history + run times so flakiness/slow detection works without a real CI. Planted flaky test: 'test_search_returns_results' (18/50 fails). Planted slow test: 'test_payment_gateway_charges_card' (42.0s avg). All others are stable (<=1 fail) and fast (<1s).",
+  "_comment": "Mock pass/fail history + average run time per test, so flakiness/slow detection works without a real CI. One entry per test in sample_suite/. Planted flaky tests: test_search_returns_results (18/50), test_checkout_payment_retry (16/50). Planted slow tests: test_payment_gateway_charges_card (42.0s), test_full_catalog_export (19.0s). Every other test is stable (<=1 fail) and fast (<1s).",
   "test_login_success": {
     "runs": 50,
     "fails": 1,
@@ -15,19 +15,49 @@
     "fails": 0,
     "avg_seconds": 0.77
   },
-  "test_add_to_cart": {
+  "test_session_expiry": {
     "runs": 50,
     "fails": 0,
     "avg_seconds": 0.46
   },
-  "test_cart_total_includes_tax": {
+  "test_weak_signup_rejected": {
     "runs": 50,
     "fails": 0,
     "avg_seconds": 0.84
   },
-  "test_checkout_creates_order": {
+  "test_add_item_to_cart": {
     "runs": 50,
     "fails": 0,
+    "avg_seconds": 0.23
+  },
+  "test_cart_add_item": {
+    "runs": 50,
+    "fails": 1,
+    "avg_seconds": 0.49
+  },
+  "test_remove_item_from_cart": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.26
+  },
+  "test_cart_total_includes_tax": {
+    "runs": 50,
+    "fails": 1,
+    "avg_seconds": 0.24
+  },
+  "test_apply_discount_code": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.86
+  },
+  "test_cart_persists_between_visits": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.6
+  },
+  "test_checkout_creates_order": {
+    "runs": 50,
+    "fails": 1,
     "avg_seconds": 0.23
   },
   "test_payment_gateway_charges_card": {
@@ -35,29 +65,54 @@
     "fails": 0,
     "avg_seconds": 42.0
   },
+  "test_checkout_payment_retry": {
+    "runs": 50,
+    "fails": 16,
+    "avg_seconds": 0.41
+  },
+  "test_order_confirmation_email": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.4
+  },
+  "test_order_blocked_when_basket_empty": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.58
+  },
   "test_search_returns_results": {
     "runs": 50,
     "fails": 18,
-    "avg_seconds": 0.52
+    "avg_seconds": 0.59
   },
-  "test_remove_from_cart": {
+  "test_search_no_results": {
     "runs": 50,
     "fails": 0,
-    "avg_seconds": 0.37
+    "avg_seconds": 0.27
   },
-  "test_apply_discount_code": {
-    "runs": 50,
-    "fails": 1,
-    "avg_seconds": 0.24
-  },
-  "test_product_listing_pagination": {
+  "test_full_catalog_export": {
     "runs": 50,
     "fails": 0,
-    "avg_seconds": 0.86
+    "avg_seconds": 19.0
+  },
+  "test_search_pagination": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.46
   },
   "test_update_account_email": {
     "runs": 50,
     "fails": 0,
     "avg_seconds": 0.6
+  },
+  "test_update_profile_name": {
+    "runs": 50,
+    "fails": 0,
+    "avg_seconds": 0.55
+  },
+  "test_delete_account": {
+    "runs": 50,
+    "fails": 1,
+    "avg_seconds": 0.74
   }
 }
