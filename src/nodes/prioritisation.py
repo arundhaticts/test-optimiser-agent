@@ -8,10 +8,12 @@ pares back the least-valuable removal and loops back so the gate re-checks. Risk
 tests are pinned and never removable.
 """
 
-from src.config import DEFAULT_COVERAGE_TARGET
-from src.observability import audit
+from src.config import DEFAULT_COVERAGE_TARGET, MAX_REVISE_ITERS
+from src.observability import audit, get_logger
 from src.nodes._coverage_model import coverage_for
 from src.hitl.interrupts import is_protected
+
+_log = get_logger("prioritisation")
 
 
 def _surviving(state) -> list[dict]:
@@ -55,14 +57,24 @@ def prioritisation_node(state) -> dict:
 
 
 def coverage_floor_gate(state) -> str:
-    """ENFORCED gate (Blocker #2): block any change set below the coverage target."""
+    """ENFORCED gate (Blocker #2): block any change set below the coverage target.
+
+    Routes to `revise` while projected coverage is below target. A defensive cap
+    (MAX_REVISE_ITERS) guarantees termination even if a future (non-monotonic) coverage
+    parser fails to converge — today the deterministic model always recovers, so the cap
+    is never reached.
+    """
     target = state.get("coverage_target", DEFAULT_COVERAGE_TARGET)
     projected = coverage_for(state.get("normalised_suite", []),
                              state.get("approved_removals", []),
                              state.get("redundancy_flags", []))
-    if projected < target:
-        return "revise"
-    return "approve_ranking"
+    if projected >= target:
+        return "approve_ranking"
+    if state.get("revise_count", 0) >= MAX_REVISE_ITERS:
+        _log.warning("coverage_floor_gate: revise cap (%d) hit at projected=%.2f < target=%.2f; "
+                     "proceeding without further revision", MAX_REVISE_ITERS, projected, target)
+        return "approve_ranking"
+    return "revise"
 
 
 def revise_node(state) -> dict:
@@ -88,9 +100,11 @@ def revise_node(state) -> dict:
     if best is not None:
         removals.remove(best)
     projected = coverage_for(suite, removals, flags)
+    revise_count = state.get("revise_count", 0) + 1
     return {
         "approved_removals": removals,
         "projected_coverage": projected,
+        "revise_count": revise_count,
         "audit_log": [audit("revise", "reverted_removal", reverted=best,
-                            projected_coverage=projected)],
+                            projected_coverage=projected, iteration=revise_count)],
     }

@@ -43,6 +43,7 @@ USE_SPACY = os.getenv("SPACY_NER", "0") == "1"
 
 # --- Loop & coverage controls ---
 MAX_GEN_RETRIES = 3                 # bounds the validate -> gap_gen loop (Blocker #1)
+MAX_REVISE_ITERS = 10               # defensive cap on the coverage-floor revise loop
 DEFAULT_COVERAGE_TARGET = 0.80      # the hard floor (Blocker #2)
 
 # --- Semantic similarity thresholds (cosine, 0..1) ---

@@ -86,10 +86,12 @@ SPACY_NER=0
 | `OFFLINE_MODE` | No | `0` | Set `1` to force the deterministic path even with a key present. |
 | `EMBED_ALLOW_DOWNLOAD` | No | `0` | Set `1` to use real sentence-transformers embeddings (downloads the model once). Off → fast deterministic hashing embeddings. |
 | `SPACY_NER` | No | `0` | Set `1` to use spaCy NER for entity extraction. Off → deterministic keyword extraction. |
+| `CHECKPOINT_DB` | No | _(unset)_ | Path to a SQLite file (e.g. `runs.sqlite`) to **persist paused runs across restarts**. Unset → in-memory (lost on restart; fine for the demo). Requires `pip install langgraph-checkpoint-sqlite`. See [CONFIGURATION.md](CONFIGURATION.md) §6. |
 
 > The defaults are tuned for a fast, dependency-light demo. Leave `EMBED_ALLOW_DOWNLOAD` and
 > `SPACY_NER` at `0` unless you specifically want the heavier semantic NLP — turning them on
-> pulls in PyTorch/spaCy and can be slow to import on some machines.
+> pulls in PyTorch/spaCy and can be slow to import on some machines. `CHECKPOINT_DB` is only
+> needed when you expose the API/webhook to real, always-on automation.
 
 ---
 

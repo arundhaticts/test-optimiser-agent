@@ -41,6 +41,7 @@ class TestOptimiserState(TypedDict, total=False):
 
     # --- Loop & error control ---
     gen_retry_count: int                  # bounds the validation loop
+    revise_count: int                     # bounds the coverage-floor revise loop (defensive)
     validation_passed: bool               # set by validation_node, read by router
     needs_regen: bool
     tool_errors: Annotated[list[dict], add]   # degraded/failed tool calls

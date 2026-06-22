@@ -123,6 +123,19 @@ Note: changing **any** value in `.env` (key or model) requires a **process resta
 effect — `uvicorn --reload` watches `.py` files, not `.env`, and the key/client are read once
 at startup.
 
+## 6. Persistence — `CHECKPOINT_DB` (for real automation)
+
+LangGraph stores a paused run (waiting at a HITL checkpoint) in a *checkpointer*. By default
+that's an in-memory `MemorySaver`, so **paused runs are lost when the process restarts** — fine
+for the CLI and the demo.
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `CHECKPOINT_DB` | _(unset)_ | Path to a SQLite file, e.g. `CHECKPOINT_DB=runs.sqlite`. When set, `make_checkpointer()` ([src/graph.py](../src/graph.py)) uses a **persistent `SqliteSaver`** so paused/resumable runs survive restarts. Requires `pip install langgraph-checkpoint-sqlite`; if the package is missing it logs a warning and falls back to in-memory. |
+
+Wire this up before exposing the API/webhook to real (always-on) automation. No code change is
+needed — set the env var and restart. The HTTP contract and outputs are unchanged.
+
 ---
 
 > ⚠️ **Warning — re-run the golden eval set after tuning.**

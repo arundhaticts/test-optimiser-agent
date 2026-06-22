@@ -16,3 +16,6 @@ pytest                     # for the tests/ folder
 # Demo API bridge (Phase 10) — serves the React frontend in frontend/
 fastapi                    # HTTP bridge: POST /runs, POST /runs/{id}/resume
 uvicorn                    # ASGI server (uvicorn api:app --reload)
+# Optional: persistent checkpointer for durable paused/resumable runs across restarts.
+# Enable by setting CHECKPOINT_DB=<path.sqlite>; otherwise runs use the in-memory saver.
+# langgraph-checkpoint-sqlite
