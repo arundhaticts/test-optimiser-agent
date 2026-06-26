@@ -71,6 +71,7 @@
   - Someone pushes new code
   - A pipeline fails
   - New requirements get added
+- *Implementation status:* **Manual** (CLI `main.py` + the React UI) and **API** (FastAPI `api.py` — `POST /runs`, `POST /runs/{id}/resume`, `GET /runs/{id}`, `/health`) are built; the **Webhook** trigger is planned (Phase 11)
 
 ---
 
@@ -86,20 +87,20 @@
 ## 7. Software Stack
 
 - **LangGraph** — the traffic controller that runs the whole pipeline, handles pauses, loops, and decision points
-- **Strong LLM** — used when real thinking is needed: explaining scores, writing test code, making prioritisation calls
-- **Cheap LLM** — used for repetitive mechanical work: labelling, formatting, simple yes/no routing
-- **Vector store** — a database that finds things by meaning, not just matching words
-- **NLP layer** — handles bulk text work like extracting entities and matching meanings across thousands of tests cheaply
+- **LLM — Google Gemini** — used when real thinking is needed: explaining scores, writing test code, making prioritisation calls. Reached through one client (`src/llm.py`). Two configurable slots — `REASONING_MODEL` (judgement) and `FAST_MODEL` (lighter passes) — both **default to `gemini-2.5-flash`**, so the same model fills both today; `FAST_MODEL` can be pointed at a cheaper tier later
+- **Deterministic fallback (no LLM)** — every LLM call is optional. With no `GEMINI_API_KEY`, in `OFFLINE_MODE`, or on a provider error/quota (429), scoring falls back to a deterministic rubric and gap generation to convention-matching stubs — the run always completes, with the degrade recorded in `tool_errors`
+- **Vector store** — a database that finds things by meaning, not just matching words (Chroma; optional — degrades to empty context if unavailable)
+- **NLP layer** — handles bulk text work like extracting entities and matching meanings across thousands of tests cheaply. The heavy models are **opt-in**: sentence-transformers embeddings (`EMBED_ALLOW_DOWNLOAD=1`) and spaCy NER (`SPACY_NER=1`); the **default path is deterministic** (hashing vectors, lexical-overlap similarity, keyword extraction) so the demo is fast and dependency-light
 - **Test parsers** — translates every test framework's format into one language the agent can work with
 - **Repo + Jira connectors** — how the agent actually reads your code and your tickets
-- **Checkpointer** — saves everything when the agent pauses at a checkpoint, picks up exactly where it left off when a human responds
+- **Checkpointer** — saves everything when the agent pauses at a checkpoint, picks up exactly where it left off when a human responds. **In-memory by default** (`MemorySaver` — paused runs are lost on process restart, fine for the CLI/demo); set `CHECKPOINT_DB=<path.sqlite>` to swap in a **persistent SQLite saver** (`make_checkpointer()` in `src/graph.py`) so paused runs survive restarts when wiring up always-on automation
 - **Sandbox executor** — runs generated tests in a sealed container so nothing can go wrong in your real system
 
-**Why two LLMs:**
-- One run can involve thousands of tests
-- Using the expensive model for everything — including simple labelling tasks — would be slow and costly
-- Cheap model handles the bulk repetitive passes
-- Expensive model only gets called when the task genuinely needs reasoning
+**Why the LLM is reserved for judgement (deterministic NLP does the bulk):**
+- One run can involve thousands of tests — running an LLM over each would be slow and costly
+- Deterministic NLP (similarity, clustering, extraction) narrows the field first at near-zero cost and with no API dependency
+- The LLM is called only where genuine reasoning is needed: scoring rationale, prioritisation trade-offs, writing gap-test code
+- `REASONING_MODEL` / `FAST_MODEL` are kept as separate slots so a cheaper model can be slotted into `FAST_MODEL` later; today both default to `gemini-2.5-flash`
 
 ---
 
@@ -114,8 +115,8 @@
 - Success metrics locked upfront: runtime ↓, redundancy ↓, flakiness rate ↓, coverage held, unapproved deletions = 0
 
 **Phase 2 — Architecture**
-- LLM routing: strong model for nodes 5 and 7, cheap model for classification, formatting, routing
-- Memory: short-term typed state object per run, long-term per-project vector store updated after every run
+- LLM use: Google Gemini (`gemini-2.5-flash`) reserved for Node 5 (scoring) and Node 7 (gap generation); classification, formatting and routing are deterministic NLP / code, not an LLM call
+- Memory: short-term typed state object per run; long-term per-project store updated after every run — implemented as a per-project JSON file (`src/memory/store.py`: prior decisions, protected tests, known-flaky), not an embedding store
 
 **Phase 3 — Build & Test**
 - Wired to real repos and CI history, not synthetic data — every node decision logged to audit trail
@@ -168,6 +169,7 @@ flowchart TD
 - NLP breaks test names and docstrings into clean tokens and reduces words to root forms
 - NER pulls out exactly what each test is touching — which endpoint, which module, which function
 - Runs across thousands of tests instantly at near-zero cost — LLM would be too slow and expensive here
+- *Implementation:* default is deterministic tokenise / lemmatise / keyword extraction; spaCy NER is opt-in (`SPACY_NER=1`). Unparseable tests are isolated and flagged, never silently dropped
 
 ---
 
@@ -177,6 +179,7 @@ flowchart TD
 - Anything with no test close to it gets flagged as a gap, sorted by how risky that blind spot is
 - NLP converts both tests and requirements into embeddings, cosine similarity measures how close they are in meaning — above a threshold they get linked, giving a numeric confidence score not a guess
 - NLP nearest-neighbour search finds requirements with no semantically close test — gaps ranked by distance, furthest from any existing test = most urgent blind spot
+- *Implementation:* default similarity is deterministic lexical overlap (threshold `CRITERIA_MATCH_THRESHOLD` / `GAP_THRESHOLD` = 0.45); real sentence-transformers embeddings are opt-in (`EMBED_ALLOW_DOWNLOAD=1`). The coverage map is computed here from the *existing* suite — a gap later covered by an approved generated test is tagged `addressed_by` in Node 10, not recomputed here
 
 ---
 
@@ -186,6 +189,7 @@ flowchart TD
 - Every flag comes with the evidence behind it, not just a label
 - NLP embeds every test and uses agglomerative clustering to group semantically similar ones — catches duplicates that look completely different in wording but test the exact same thing
 - NLP extracts signal from noisy CI logs via TF-IDF or embeddings, text classification labels each pattern as flaky or real failure — bulk processing without a separate LLM call per log line
+- *Implementation:* duplicate clustering runs on the same similarity backbone as Node 2 (deterministic by default, embeddings when enabled, threshold `DUPLICATE_THRESHOLD` = 0.80). Flaky = `fails/runs ≥ FLAKY_FAIL_RATE` (10%), slow = `avg_seconds ≥ SLOW_TEST_SECONDS` (10s), read from CI history; missing history degrades to "needs more data"
 
 ---
 
@@ -201,9 +205,10 @@ flowchart TD
 ### Node 5 — Health Scoring
 - Takes everything from nodes 2, 3, and 4 and produces a score for every test across multiple dimensions
 - Each score has a reason and a recommended action attached — not just a number
-- Strong LLM used here because explaining why a test scored low needs actual reasoning not just calculation
+- The LLM (Gemini) used here because explaining why a test scored low needs actual reasoning not just calculation
 - NLP signals from nodes 1–4 feed directly into scoring — LLM reasons over already-structured inputs, not raw text
 - Result: LLM spends tokens on judgement, not on parsing — much cheaper and more accurate
+- *Implementation:* uses Gemini with a strict-JSON prompt; on no key / offline / error it falls back to a deterministic rubric over the analysis results, and a dimension with no evidence is reported as "insufficient evidence" (score `null`), never guessed
 
 ---
 
@@ -229,6 +234,7 @@ flowchart TD
 - Recomputes projected coverage after approved removals are applied
 - If above target → proceeds to HITL 2
 - If below target → walks back the least valuable removals and re-checks, loops until floor is held
+- The revise loop is bounded by `MAX_REVISE_ITERS` (default 10) via a `revise_count` guard — a defensive backstop so a future non-monotonic coverage parser can't spin forever; the current converging model never reaches it
 - Cannot be skipped — no change set that breaches the coverage floor passes through
 - Risk area tests are pinned and never eligible for removal at this gate
 
@@ -243,11 +249,12 @@ flowchart TD
 ---
 
 ### Node 7 — Gap Test Generation
-- Strong LLM writes brand new test code for the top-ranked gaps found in Node 2
+- The LLM (Gemini) writes brand new test code for the top-ranked gaps found in Node 2
 - Does not go anywhere near the real repo — output goes straight to sandbox
 - Gap list it works from was produced by NLP in Node 2 — LLM takes over fully for generation
 - If validation fails, this node is called again with the failure reason as additional context — up to 3 times
 - `gen_retry_count` in state object tracks attempts and enforces the ceiling
+- *Implementation:* uses Gemini (`gap_generation_prompt`); on no key / offline / error it emits a runnable convention-matching stub instead and records the degrade in `tool_errors`
 
 ---
 
@@ -277,10 +284,11 @@ flowchart TD
 ---
 
 ### Node 10 — Render Outputs
-- Produces all 6 deliverables and writes everything learned from this run into long-term memory
+- Produces all deliverables and writes everything learned from this run into long-term memory
 - Next run starts with this run's decisions already in context
-- NLP step here: outputs and decisions get embedded and written back to the vector store
-- This is what makes Node 4 smarter on every subsequent run — memory compounds over time
+- *Implementation:* writes accepted/rejected decisions and newly-confirmed flaky tests to the per-project JSON store (`src/memory/store.py`) — not an embedding write-back
+- A coverage gap that an approved generated test now covers is tagged with **`addressed_by`** (the test id) in the Coverage & Gap Map — surfaced as "gap · test drafted" (the criterion stays a gap until the test is implemented and merged)
+- This is what makes Node 4 smarter on every subsequent run — a rejected suggestion is never re-proposed
 - Every degrade, flag, and approval from this run becomes retrievable context for the next
 
 ---
@@ -291,9 +299,10 @@ flowchart TD
 from typing import TypedDict, Annotated, Literal
 from operator import add
 
-class TestOptimiserState(TypedDict):
+class TestOptimiserState(TypedDict, total=False):
     # --- Inputs ---
     project_id: str
+    suite_path: str                       # path to the suite (intake parses it)
     raw_suite: list[dict]
     optimization_goal: Literal["speed", "coverage", "reliability", "cost"]
     coverage_target: float                # default 0.80
@@ -303,11 +312,13 @@ class TestOptimiserState(TypedDict):
 
     # --- Working state ---
     normalised_suite: list[dict]
+    conventions: dict                     # detected suite style (for gap generation)
     coverage_map: dict
     projected_coverage: float
     coverage_gaps: list[dict]
     redundancy_flags: list[dict]
     flakiness_flags: list[dict]
+    slow_flags: list[dict]                # tests over the slow-time threshold
     retrieved_context: list[dict]
     scorecard: dict
 
@@ -317,9 +328,11 @@ class TestOptimiserState(TypedDict):
     approved_generated_tests: list[dict]
 
     # --- Loop & error control ---
-    gen_retry_count: int
-    tool_errors: Annotated[list[dict], add]
+    gen_retry_count: int                  # bounds the validation loop (Blocker #1)
+    revise_count: int                     # bounds the coverage-floor revise loop (defensive)
+    validation_passed: bool               # set by validation_node, read by router
     needs_regen: bool
+    tool_errors: Annotated[list[dict], add]
 
     # --- Results ---
     prioritised_plan: dict
@@ -331,9 +344,10 @@ class TestOptimiserState(TypedDict):
 ```
 
 - Single state object flows through every node — each node reads what it needs and writes results back
+- Declared `total=False` so a node returns **only** the keys it updates; LangGraph merges them into the running state
 - `tool_errors` and `audit_log` are append-only using `Annotated[list, add]` — they only ever grow, nothing is ever overwritten
 - Human decisions captured at each interrupt are stored here and passed forward to all subsequent nodes
-- `gen_retry_count` bounds the Node 7 → Node 8 loop — enforced in code not just convention
+- `gen_retry_count` bounds the Node 7 → Node 8 loop, and `revise_count` bounds the coverage-floor revise loop — both enforced in code, not just convention
 
 ---
 
@@ -360,17 +374,21 @@ def route_after_validation(state: TestOptimiserState) -> str:
 ### 2 · Enforced Coverage Floor Gate
 
 ```python
+MAX_REVISE_ITERS = 10
+
 def coverage_floor_gate(state: TestOptimiserState) -> str:
     projected = recompute_coverage(state["normalised_suite"],
                                    state["approved_removals"])
-    state["projected_coverage"] = projected
-    if projected < state["coverage_target"]:
-        return "revise"
-    return "approve_ranking"
+    if projected >= state["coverage_target"]:
+        return "approve_ranking"
+    if state.get("revise_count", 0) >= MAX_REVISE_ITERS:   # defensive cap
+        return "approve_ranking"                            # can't converge → proceed (logged)
+    return "revise"
 ```
 
 - Recomputes projected coverage after every removal set is applied
 - Below target → routes to revise, walks back least-valuable removals, re-checks
+- Bounded by `MAX_REVISE_ITERS` via a `revise_count` guard — a defensive termination backstop for a future non-monotonic coverage parser; today's converging model never reaches it
 - Cannot pass a change set that breaches the floor — enforced in code not prose
 - Risk area tests pinned and never eligible for removal here
 
@@ -398,8 +416,10 @@ def call_tool(fn, *args, retries=3, backoff=2):
 
 - Every degrade appended to `tool_errors` and shown in final report
 - Human always knows which results are full-confidence and which are degraded
-- Transient errors: exponential backoff, 3 retries
-- Fatal errors: no retry, immediate clean failure
+- Transient errors: exponential backoff, `TOOL_RETRIES` retries (default 3, base `BACKOFF_BASE`) — config-driven, not hardcoded
+- Unexpected exceptions are treated as transient-once (retried then degraded), so even an unforeseen failure degrades cleanly rather than crashing the graph
+- Fatal errors: no retry, immediate clean failure (e.g. auth, unreadable repo)
+- The LLM client routes provider errors through this wrapper too: auth/config → fatal, quota/transient → retried then deterministic fallback
 
 ---
 
