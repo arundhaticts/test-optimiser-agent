@@ -23,3 +23,6 @@ logs/
 
 # Long-term memory store (per-project, written by src/memory/store.py)
 .agent_memory/
+
+# Learning artifacts
+docs/demo/

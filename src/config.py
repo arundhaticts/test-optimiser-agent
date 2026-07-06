@@ -3,13 +3,24 @@ All tunable constants in one place (no magic numbers scattered in nodes).
 
 Quantifies 'flaky', 'slow', 'redundant', and the coverage floor so they're not
 vibes. Every node imports its thresholds from here.
+
+Architecture position: central knobs — the single home for every threshold, feature
+    flag, and model name. Cross-cutting: imported almost everywhere and has import-time
+    side effects (loads .env, injects truststore, sets offline env vars) that must run
+    before other modules read the environment.
+Called by: src/llm.py (keys/models/offline), src/nlp/* (embedding/spaCy flags),
+    src/tools/* (retry/backoff, thresholds), the nodes (all thresholds), and tests.
+Data in: environment variables (optionally via a .env file) — GEMINI_API_KEY,
+    model overrides, and the feature-flag toggles read below.
+Data out: module-level constants consumed by importers; plus environment mutations
+    (HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE) applied as an import-time side effect.
 """
 
 import os
 
-# Load .env (key + model overrides) before any os.getenv below. config is imported by
-# every module, so this guarantees the environment is populated first. No-op if
-# python-dotenv isn't installed or there's no .env file.
+# WHY: populate the environment from .env before any os.getenv below runs, so keys and
+# model overrides are visible. config is imported by every module, so this guarantees the
+# environment is populated first. No-op if python-dotenv isn't installed or there's no .env.
 try:
     from dotenv import load_dotenv
 
@@ -17,9 +28,9 @@ try:
 except ImportError:
     pass
 
-# Use the OS (Windows) certificate store for TLS so corporate proxies / TLS-inspection
-# root CAs are trusted — otherwise the Gemini HTTPS call fails CERTIFICATE_VERIFY_FAILED.
-# No-op if truststore isn't installed.
+# WHY: trust the OS (Windows) certificate store for TLS so corporate proxies /
+# TLS-inspection root CAs are honoured — otherwise the Gemini HTTPS call fails
+# CERTIFICATE_VERIFY_FAILED. No-op if truststore isn't installed.
 try:
     import truststore
 
@@ -27,18 +38,19 @@ try:
 except ImportError:
     pass
 
-# Keep the embedding layer offline by default: if sentence-transformers is installed
+# WHY: keep the embedding layer offline by default. If sentence-transformers is installed
 # but the model isn't cached locally, do NOT reach out to huggingface.co (a blocked /
 # TLS-inspected corporate network makes that hang for minutes on retries). With these
 # set, an uncached model raises immediately and embeddings.py falls back to its
 # deterministic hashing vector. Set EMBED_ALLOW_DOWNLOAD=1 to permit a one-time download.
 USE_ST_EMBEDDINGS = os.getenv("EMBED_ALLOW_DOWNLOAD", "0") == "1"
 if not USE_ST_EMBEDDINGS:
+    # setdefault: only set when unset, so an explicit env override still wins.
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
-# spaCy NER is optional too (heavy import + model load). Off by default → deterministic
-# keyword extraction. Set SPACY_NER=1 to use spaCy entities.
+# WHY: spaCy NER is optional too (heavy import + model load). Off by default →
+# deterministic keyword extraction. Set SPACY_NER=1 to use spaCy entities.
 USE_SPACY = os.getenv("SPACY_NER", "0") == "1"
 
 # --- Loop & coverage controls ---
