@@ -14,6 +14,27 @@ export interface RunRequest {
   coverage_target: number; // 0.0–1.0
   risk_areas: string[];
   run_mode: RunMode;
+  // Optional per-run data sources (set for uploaded runs). Three-state, matching the backend:
+  //   undefined -> use the sample fixture (demo run);
+  //   ""        -> no source (an upload with no criteria/CI/expected — do NOT use sample data);
+  //   "<path>"  -> use that uploaded file.
+  criteria_path?: string;
+  ci_history_path?: string;
+  expected_findings_path?: string;
+}
+
+// Response from POST /uploads — where the uploaded files landed + what was recognised.
+export interface UploadResponse {
+  token: string;
+  suite_path: string;
+  criteria_path: string | null;
+  ci_history_path: string | null;
+  expected_findings_path: string | null;
+  written: string[];
+  skipped: { name: string; reason: string }[];
+  test_count: number;
+  frameworks: string[];
+  files_without_tests: string[];
 }
 
 // ---------- HITL payloads (from src/hitl/interrupts.py) ----------
@@ -165,11 +186,39 @@ export interface OptimisedPlan {
   goal: string;
 }
 
+// ---------- Benchmark (only present when an expected-findings key was supplied) ----------
+
+export interface BenchmarkCategory {
+  matched: (string | string[])[]; // ids, or clusters (id lists) for `duplicates`
+  missing: (string | string[])[];
+  extra: (string | string[])[];
+  precision: number | null;
+  recall: number | null;
+  expected?: string[];
+  actual?: string[];
+  expected_count?: number;
+  actual_count?: number;
+}
+export interface BenchmarkSummary {
+  expected_total: number;
+  actual_total: number;
+  matched_total: number;
+  missing_total: number;
+  extra_total: number;
+  recall: number | null;
+  precision: number | null;
+}
+export interface Benchmark {
+  categories: Record<string, BenchmarkCategory>;
+  summary: BenchmarkSummary;
+}
+
 export interface Outputs {
   scorecard: Scorecard;
   coverage_gap_map: CoverageGapMap;
   redundancy_flakiness_report: RedundancyFlakinessReport;
   optimised_plan: OptimisedPlan;
+  benchmark?: Benchmark; // present only for benchmark runs (expected-findings supplied)
   audit_log?: AuditEntry[];
   tool_errors?: ToolError[];
 }

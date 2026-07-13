@@ -275,3 +275,19 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary)
   .run-side { position: static; }
   .grid-2x3, .tier-cols, .plan-cols { grid-template-columns: 1fr; }
 }
+
+/* Benchmark tab (only shown when the run was graded vs an expected-findings key) */
+.benchmark-summary {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+}
+.benchmark-summary .metric {
+  flex: 1 1 120px; display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.benchmark-summary .metric-val { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+.benchmark-summary .metric-label { font-size: 0.78rem; color: var(--muted); }
+.benchmark-table td { vertical-align: top; }
+.chip-matched { border-color: var(--green); color: var(--green); }
+.chip-missing { border-color: var(--red); color: var(--red); }
+.chip-extra { border-color: var(--amber); color: var(--amber); }

@@ -37,9 +37,10 @@ Data out:
 """
 
 import uuid
+from importlib.util import find_spec
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -48,16 +49,23 @@ from langgraph.types import Command
 from src.config import DEFAULT_COVERAGE_TARGET
 from src.observability import configure_logging, get_logger
 from src.graph import build_graph
+from src.tools import upload_store, repo_reader
+from src.tools.tool_wrapper import call_tool
 
 configure_logging()
 log = get_logger("api")
+
+# WHY: file uploads need the optional `python-multipart` package. Detect it up front so the
+# API still boots without it — POST /uploads degrades to a clear 503 instead of the whole app
+# failing to import (which would also take down /runs and /health).
+_MULTIPART_OK = find_spec("multipart") is not None
 
 app = FastAPI(title="Test Optimiser Agent", version="1.0")
 # WHY: the React dev frontend runs on a different origin (Vite :5173), so browsers block
 # its fetch/XHR unless this backend explicitly allows that origin via CORS.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Vite dev
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173","http://localhost:5176"],  # Vite dev
     allow_methods=["*"],  # demo backend — accept any method from the allowed origins
     allow_headers=["*"],  # ...and any header (e.g. Content-Type for JSON bodies)
 )
@@ -90,6 +98,12 @@ class RunRequest(BaseModel):
     risk_areas: list[str] = []
     additional_context: str = ""
     run_mode: str = "interactive"
+    # Optional per-run data sources (e.g. from POST /uploads) — when set they override the
+    # built-in sample fixtures so a benchmark run analyses its own criteria / CI history, and
+    # grades against its own expected findings. "" means "no source" (do not use sample data).
+    criteria_path: str | None = None
+    ci_history_path: str | None = None
+    expected_findings_path: str | None = None
 
 
 class ResumeRequest(BaseModel):
@@ -235,12 +249,104 @@ def start_run(req: RunRequest) -> dict:
         "risk_areas": req.risk_areas,
         "additional_context": req.additional_context,
         "run_mode": req.run_mode,
+        # WHY: thread the optional uploaded data-source paths into state so coverage /
+        # redundancy read them instead of the fixtures, and report grades against the
+        # uploaded expected findings (None => fixtures/sample golden, unchanged).
+        "criteria_path": req.criteria_path,
+        "ci_history_path": req.ci_history_path,
+        "expected_findings_path": req.expected_findings_path,
         "gen_retry_count": 0,
         "audit_log": [], "tool_errors": [],
     }
     log.info("start run | run_id=%s suite=%s mode=%s", run_id, req.suite_path, req.run_mode)
     state = GRAPH.invoke(initial, config=_config(run_id))
     return _package(run_id, state)
+
+
+async def upload_suite(
+    files: list[UploadFile] = File(default=[]),
+    archives: list[UploadFile] = File(default=[]),
+    criteria: UploadFile | None = File(default=None),
+    ci_history: UploadFile | None = File(default=None),
+    expected_findings: UploadFile | None = File(default=None),
+) -> dict:
+    """Receive uploaded test files (and optional criteria/CI JSON); return paths to run with.
+
+    Purpose:
+        Let another platform push a test suite to this agent for benchmarking. Files are
+        validated + sanitised and written under uploads/<token>/; the returned suite_path /
+        criteria_path / ci_history_path / expected_findings_path are then passed to POST /runs.
+    Inputs:
+        multipart form — ``files`` (individual test files), ``archives`` (.zip suites),
+        optional ``criteria``, ``ci_history`` and ``expected_findings`` JSON files.
+    Outputs:
+        {token, suite_path, criteria_path, ci_history_path, expected_findings_path,
+         written[], skipped[], test_count, frameworks[], files_without_tests[]} — the last
+         three come from a dry parse so the caller sees how many tests were recognised.
+    Side effects:
+        Writes files under uploads/<token>/ (via upload_store); runs a read-only parse of
+        the stored suite to count tests. Raises HTTPException 400 if nothing usable was sent.
+    Called by:
+        HTTP clients (the frontend upload panel and the benchmarking platform).
+    Calls:
+        UploadFile.read, upload_store.store_upload, call_tool(repo_reader.read_tests), log.
+    """
+    # WHY: read every upload into memory as (name, bytes) — the store layer (not the HTTP
+    # layer) owns validation/sanitisation, so this endpoint just marshals the payloads.
+    suite_files = [(f.filename or "unnamed", await f.read()) for f in files]
+    zips = [(f.filename or "archive.zip", await f.read()) for f in archives]
+    crit = (criteria.filename or "criteria.json", await criteria.read()) if criteria else None
+    ci = (ci_history.filename or "ci_history.json", await ci_history.read()) if ci_history else None
+    exp = ((expected_findings.filename or "expected_findings.json", await expected_findings.read())
+           if expected_findings else None)
+
+    # WHY: reject an empty upload early with a clear 400 rather than creating an empty dir.
+    if not suite_files and not zips:
+        raise HTTPException(status_code=400, detail="no test files or archives uploaded")
+
+    manifest = upload_store.store_upload(suite_files, zips, crit, ci, exp)
+
+    # WHY: dry-parse the stored suite (read-only, via the same tool a run uses) so the
+    # response reports how many tests were recognised and which files yielded none — vital
+    # feedback for a benchmarking client whose files may not match a known test convention.
+    parsed = call_tool(repo_reader.read_tests, manifest["suite_path"])
+    tests = parsed["data"] if parsed["ok"] else []
+    test_files = {str(t.get("file", "")).replace("\\", "/") for t in tests}
+    frameworks = sorted({t.get("framework") for t in tests if t.get("framework")})
+    # WHY: a written file "has tests" if some parsed test's absolute path ends with its
+    # relative name; the rest are surfaced so the caller knows what wasn't recognised.
+    files_without_tests = sorted(
+        rel for rel in manifest["written"]
+        if not any(tf.endswith(rel) for tf in test_files)
+    )
+
+    log.info("upload | token=%s written=%d skipped=%d tests=%d",
+             manifest["token"], len(manifest["written"]), len(manifest["skipped"]), len(tests))
+    return {
+        **manifest,
+        "test_count": len(tests),
+        "frameworks": frameworks,
+        "files_without_tests": files_without_tests,
+    }
+
+
+# WHY: register /uploads only when python-multipart is available. DEFINING upload_suite above
+# is safe; it's route *registration* (FastAPI analysing the File() params) that requires
+# multipart. Gating it here keeps the rest of the API (runs/health) working even when the
+# optional upload dependency is absent; otherwise we expose a stub that says how to enable it.
+if _MULTIPART_OK:
+    app.post("/uploads")(upload_suite)
+else:
+    log.warning("POST /uploads disabled — python-multipart not installed "
+                "(pip install python-multipart, then restart the API)")
+
+    @app.post("/uploads")
+    async def upload_unavailable() -> dict:
+        """503 stub shown when python-multipart isn't installed (see upload_suite above)."""
+        raise HTTPException(
+            status_code=503,
+            detail="File uploads require the 'python-multipart' package. Install it "
+                   "(pip install python-multipart) and restart the API.")
 
 
 @app.post("/runs/{run_id}/resume")

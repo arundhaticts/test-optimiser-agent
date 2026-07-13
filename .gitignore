@@ -18,6 +18,9 @@ chroma/
 outputs/
 *.checkpoint
 
+# Uploaded test suites / criteria / CI history (POST /uploads, written by src/tools/upload_store.py)
+uploads/
+
 # Agent logs (observability — written by src/observability.py)
 logs/
 

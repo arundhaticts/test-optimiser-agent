@@ -52,7 +52,10 @@ def coverage_node(state) -> dict:
 
     # WHY: fetch acceptance criteria via the connector; if unavailable, degrade to an
     # empty criteria set and record a low-confidence tool_error rather than fail.
-    res = call_tool(test_management.get_acceptance_criteria, state.get("project_id"))
+    # WHY: pass the optional per-run criteria_path so an uploaded criteria file (benchmark)
+    # is used instead of the sample fixture when present (None => fixture, unchanged).
+    res = call_tool(test_management.get_acceptance_criteria,
+                    state.get("project_id"), state.get("criteria_path"))
     criteria = res["data"] if res["ok"] else []
     errors = [] if res["ok"] else [tool_error_entry(
         "test_management", res["error"], "no criteria; coverage is low-confidence")]
