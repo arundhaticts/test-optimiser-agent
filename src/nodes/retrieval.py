@@ -42,7 +42,10 @@ def retrieval_node(state) -> dict:
     # WHY: seed the vector store with criteria first so a query has something to match
     # against; degrade to empty criteria if the connector is unavailable.
     # Seed the store with criteria so retrieval has something to match against.
-    res = call_tool(test_management.get_acceptance_criteria, project_id)
+    # WHY: honour the optional per-run criteria_path (uploaded benchmark criteria) here too,
+    # so retrieval seeds from the same source coverage used (None => fixture, unchanged).
+    res = call_tool(test_management.get_acceptance_criteria,
+                    project_id, state.get("criteria_path"))
     criteria = res["data"] if res["ok"] else []
     for c in criteria:
         vector_store.upsert(c["id"], c["text"], {"type": "criterion"})

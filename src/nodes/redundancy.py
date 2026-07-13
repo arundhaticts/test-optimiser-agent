@@ -52,9 +52,12 @@ def redundancy_node(state) -> dict:
     # slow if avg runtime crosses SLOW_TEST_SECONDS. Tests with no history are only counted
     # (no_history), never asserted flaky/slow.
     # --- Flakiness & slow triage ---
+    # WHY: read the optional per-run ci_history_path once so an uploaded CI-history file
+    # (benchmark) drives flaky/slow triage instead of the fixture (None => fixture).
+    ci_path = state.get("ci_history_path")
     flakiness_flags, slow_flags, no_history = [], [], 0
     for t in suite:
-        hist = ci_history.get_history(t["id"])
+        hist = ci_history.get_history(t["id"], ci_path)
         # WHY: no runs recorded -> insufficient evidence; count and skip, don't guess.
         if not hist or not hist.get("runs"):
             no_history += 1

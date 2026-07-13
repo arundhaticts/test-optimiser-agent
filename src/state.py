@@ -40,6 +40,10 @@ class TestOptimiserState(TypedDict, total=False):
     risk_areas: list[str]                 # pins protected tests (via is_protected)
     additional_context: str               # reserved free-text context
     run_mode: Literal["interactive", "automated"]   # webhook/API => automated; read by HITL nodes
+    criteria_path: str                    # optional path to an uploaded acceptance-criteria JSON (else fixture)
+    ci_history_path: str                  # optional path to an uploaded CI-history JSON (else fixture)
+    expected_findings_path: str           # optional path to an uploaded expected-findings (golden) JSON;
+                                          # read by report for the benchmark (None=sample golden, ""=none)
 
     # --- Working state (written by nodes) ---
     normalised_suite: list[dict]          # parsed suite from intake; read by most downstream nodes

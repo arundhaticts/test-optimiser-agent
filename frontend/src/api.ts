@@ -11,6 +11,7 @@ import type {
   RunRequest,
   RunResult,
   RunSnapshot,
+  UploadResponse,
 } from "./types";
 
 const API_BASE = "http://127.0.0.1:8002";
@@ -55,6 +56,32 @@ export async function checkHealth(): Promise<boolean> {
     return data.status === "ok";
   } catch {
     return false;
+  }
+}
+
+/** Upload test files (and optional criteria / CI-history JSON) for a benchmark run.
+ *  `files` are individual test files; `archives` are .zip suites; both optional but at
+ *  least one must be non-empty. Returns where the files landed + what was recognised. */
+export async function uploadFiles(opts: {
+  files?: File[];
+  archives?: File[];
+  criteria?: File | null;
+  ciHistory?: File | null;
+  expectedFindings?: File | null;
+}): Promise<UploadResponse> {
+  const form = new FormData();
+  (opts.files ?? []).forEach((f) => form.append("files", f));
+  (opts.archives ?? []).forEach((f) => form.append("archives", f));
+  if (opts.criteria) form.append("criteria", opts.criteria);
+  if (opts.ciHistory) form.append("ci_history", opts.ciHistory);
+  if (opts.expectedFindings) form.append("expected_findings", opts.expectedFindings);
+  try {
+    const { data } = await client.post<UploadResponse>("/uploads", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  } catch (err) {
+    throw new Error(describeError(err));
   }
 }
 

@@ -12,11 +12,109 @@ Called by: the graph (src/graph.py).
 Data in: final_outputs, scorecard, approved_generated_tests, coverage_gaps,
 coverage_map, projected_coverage, redundancy_flags, flakiness_flags, slow_flags,
 retrieved_context, tool_errors, audit_log, project_id, approved_removals.
-Data out: final_outputs (all 4 deliverables + extras), audit_log[+].
+Data out: final_outputs (all 4 deliverables + extras; plus a `benchmark` section when an
+expected-findings answer key is available), audit_log[+].
 """
 
 from src.observability import audit
 from src.memory import store as memory
+from src.tools import expected_findings as expected_findings_tool
+from src.tools.tool_wrapper import call_tool, tool_error_entry
+
+
+def _id_metrics(expected_ids, actual_ids) -> dict:
+    """Compare two id sets and return matched/missing/extra + precision/recall.
+
+    Purpose: grade a flat category (flaky / slow / coverage_gaps) of the run's findings
+        against the expected ids.
+    Inputs: expected_ids, actual_ids (iterables of str; falsy/None entries dropped).
+    Outputs: dict {expected, actual, matched, missing, extra, precision, recall}.
+    Side effects: None (pure).
+    Called by: _benchmark.
+    Calls: set operations.
+    """
+    exp = {i for i in expected_ids if i}
+    act = {i for i in actual_ids if i}
+    matched = exp & act
+    # WHY: precision = of what we flagged, how much was expected; recall = of what was
+    # expected, how much we caught. None (not 0) when a side is empty so it reads as "n/a".
+    precision = round(len(matched) / len(act), 3) if act else None
+    recall = round(len(matched) / len(exp), 3) if exp else None
+    return {"expected": sorted(exp), "actual": sorted(act),
+            "matched": sorted(matched), "missing": sorted(exp - act),
+            "extra": sorted(act - exp), "precision": precision, "recall": recall}
+
+
+def _cluster_metrics(expected_clusters, actual_clusters) -> dict:
+    """Compare duplicate clusters (order-independent) and return the same-shaped metrics.
+
+    Purpose: grade the duplicate-cluster category, treating each cluster as an unordered
+        set so cluster/member ordering never affects the match.
+    Inputs: expected_clusters, actual_clusters (iterables of id lists).
+    Outputs: dict {matched, missing, extra, precision, recall, expected_count, actual_count}.
+    Side effects: None (pure).
+    Called by: _benchmark.
+    Calls: frozenset / set operations.
+    """
+    exp = {frozenset(c) for c in expected_clusters if c}
+    act = {frozenset(c) for c in actual_clusters if c}
+    matched = exp & act
+    precision = round(len(matched) / len(act), 3) if act else None
+    recall = round(len(matched) / len(exp), 3) if exp else None
+    # WHY: clusters aren't JSON-serialisable as sets — emit each as a sorted id list.
+    return {"matched": [sorted(c) for c in matched],
+            "missing": [sorted(c) for c in exp - act],
+            "extra": [sorted(c) for c in act - exp],
+            "precision": precision, "recall": recall,
+            "expected_count": len(exp), "actual_count": len(act)}
+
+
+def _benchmark(expected: dict, state) -> dict:
+    """Grade the run's actual findings against an expected-findings answer key.
+
+    Purpose: produce a benchmark comparison (per-category matched/missing/extra + an overall
+        precision/recall summary) so an uploaded golden set turns a run into a scored eval.
+    Inputs: expected — the golden dict (duplicates / flaky / slow / coverage_gaps); state —
+        the run state (redundancy_flags, flakiness_flags, slow_flags, coverage_gaps).
+    Outputs: dict {categories: {duplicates, flaky, slow, coverage_gaps}, summary: {...}}.
+    Side effects: None (pure).
+    Called by: report_node.
+    Calls: _id_metrics, _cluster_metrics.
+    """
+    # WHY: map the agent's finding shapes to the golden file's shapes, then grade each.
+    cats = {
+        "duplicates": _cluster_metrics(
+            [d.get("tests", []) for d in expected.get("duplicates", [])],
+            [f.get("cluster", []) for f in state.get("redundancy_flags", [])]),
+        "flaky": _id_metrics(
+            [f.get("test") for f in expected.get("flaky", [])],
+            [f.get("test_id") for f in state.get("flakiness_flags", [])]),
+        "slow": _id_metrics(
+            [s.get("test") for s in expected.get("slow", [])],
+            [s.get("test_id") for s in state.get("slow_flags", [])]),
+        "coverage_gaps": _id_metrics(
+            [g.get("criterion_id") for g in expected.get("coverage_gaps", [])],
+            [g.get("criterion_id") for g in state.get("coverage_gaps", [])]),
+    }
+    # WHY: roll the per-category counts into one headline precision/recall so a benchmark run
+    # has a single at-a-glance score (duplicates count as whole clusters).
+    matched = sum(len(c["matched"]) for c in cats.values())
+    expected_total = (cats["duplicates"]["expected_count"]
+                      + sum(len(cats[k]["expected"]) for k in ("flaky", "slow", "coverage_gaps")))
+    actual_total = (cats["duplicates"]["actual_count"]
+                    + sum(len(cats[k]["actual"]) for k in ("flaky", "slow", "coverage_gaps")))
+    return {
+        "categories": cats,
+        "summary": {
+            "expected_total": expected_total,
+            "actual_total": actual_total,
+            "matched_total": matched,
+            "missing_total": expected_total - matched,
+            "extra_total": actual_total - matched,
+            "recall": round(matched / expected_total, 3) if expected_total else None,
+            "precision": round(matched / actual_total, 3) if actual_total else None,
+        },
+    }
 
 
 def report_node(state) -> dict:
@@ -67,11 +165,25 @@ def report_node(state) -> dict:
     final["context_sources"] = state.get("retrieved_context", [])
     final["tool_errors"] = state.get("tool_errors", [])
 
+    # WHY: when an expected-findings answer key is available (sample golden on a demo run, or
+    # an uploaded key on a benchmark run), grade the run's actual findings against it and
+    # attach a `benchmark` section. "" (upload without a key) => load returns None => no
+    # benchmark; a bad key degrades to a surfaced tool_error rather than failing the run.
+    exp_res = call_tool(expected_findings_tool.load, state.get("expected_findings_path"))
+    benchmark = None
+    if exp_res["ok"] and exp_res["data"]:
+        benchmark = _benchmark(exp_res["data"], state)
+        final["benchmark"] = benchmark
+    elif not exp_res["ok"]:
+        final["tool_errors"] = final["tool_errors"] + [tool_error_entry(
+            "expected_findings", exp_res["error"], "benchmark skipped")]
+
     # WHY: embed the full accumulated audit trail plus this node's own entry into
     # final_outputs so the deliverable carries the complete trace.
     # Include this node's own entry so the embedded trail is complete.
     entry = audit("report", "rendered_outputs",
-                  deliverables=4, tool_errors=len(final["tool_errors"]))
+                  deliverables=4, tool_errors=len(final["tool_errors"]),
+                  benchmark=bool(benchmark))
     final["audit_log"] = state.get("audit_log", []) + [entry]
 
     # WHY: persist outcomes so future runs learn — every removal candidate (flaky tests +

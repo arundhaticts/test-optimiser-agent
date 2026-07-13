@@ -76,6 +76,12 @@ def initial_state(args) -> dict:
         "risk_areas": args.risk_areas.split(",") if args.risk_areas else [],
         "additional_context": "",
         "run_mode": args.run_mode,
+        # WHY: optional per-run data sources — when provided they override the sample
+        # fixtures (None/absent => fixtures, unchanged). getattr keeps this safe if a caller
+        # builds args without the newer flags.
+        "criteria_path": getattr(args, "criteria", None),
+        "ci_history_path": getattr(args, "ci_history", None),
+        "expected_findings_path": getattr(args, "expected_findings", None),
         "gen_retry_count": 0,  # generation-loop guard; capped later at MAX_GEN_RETRIES
         "audit_log": [],       # append-only (Annotated[list, add]) — never overwrite
         "tool_errors": [],     # append-only degrade trail from call_tool failures
@@ -189,6 +195,10 @@ def write_outputs(outputs: dict, out_dir: Path) -> None:
         "redundancy_flakiness_report.json": outputs.get("redundancy_flakiness_report", {}),
         "optimised_plan.json": outputs.get("optimised_plan", {}),
     }
+    # WHY: the benchmark is only produced when an expected-findings key was available; write
+    # it as a 5th artifact only then, so ordinary runs still emit exactly the four deliverables.
+    if outputs.get("benchmark"):
+        artifacts["benchmark.json"] = outputs["benchmark"]
     # WHY: one write per artifact — indent for human-readable diffs, utf-8 for portability.
     for name, data in artifacts.items():
         (out_dir / name).write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -225,6 +235,14 @@ def main():
                    help="comma-separated risk areas to protect")
     p.add_argument("--run-mode", default="interactive",
                    choices=["interactive", "automated"], dest="run_mode")
+    # WHY: optional local data sources so a CLI benchmark can analyse its own acceptance
+    # criteria / CI history instead of the sample fixtures (parity with POST /uploads).
+    p.add_argument("--criteria", default=None, dest="criteria",
+                   help="path to an acceptance-criteria JSON (overrides the sample fixture)")
+    p.add_argument("--ci-history", default=None, dest="ci_history",
+                   help="path to a CI-history JSON (overrides the sample fixture)")
+    p.add_argument("--expected-findings", default=None, dest="expected_findings",
+                   help="path to an expected-findings (golden) JSON to benchmark the run against")
     args = p.parse_args()
 
     # WHY: set up rotating file logging once, before any node runs, so the whole run's
