@@ -1,176 +1,82 @@
 # Test Optimiser Agent
 
-An L3, goal-driven LangGraph agent that analyses an existing test suite and produces an
-optimised, re-prioritised test plan — scoring suite health, mapping coverage against
-acceptance criteria, flagging redundant/flaky/slow tests, and drafting tests for real gaps —
-while pausing for human approval at three checkpoints. It **recommends, never deletes**.
-LLM judgement is powered by **Google Gemini (`gemini-2.5-flash`)**; it also runs fully
-**offline** with deterministic fallbacks (no API key required).
+## Purpose
+An L3, goal-driven agent that analyses an existing test suite and produces an optimised, re-prioritised test plan — scoring suite health, mapping coverage against acceptance criteria, flagging redundant/flaky/slow/obsolete tests, and drafting tests for real gaps. It **recommends, never deletes**, pausing for human approval at three checkpoints.
 
-> This file is both the **project entry point** and the **root-folder README**. The first
-> two sections get you running; the rest ("Root folder as an architectural unit") documents
-> the repository the way every sub-folder README does — purpose, fit, files, I/O,
-> dependencies, runtime flow, and debugging.
+## Framework
+LangGraph
 
-## Quick start
+## Tools
+- `read_tests`: reads test files under a path into normalised test dicts.
+- `read_source`: reads source-code text so coverage can be mapped against it.
+- `detect_conventions`: infers the suite's style/conventions to guide gap-test drafting.
+- `parse`: parses a test file across pytest/JUnit/Jest/Cypress formats into structured test records.
+- `get_history`: returns CI pass/fail history for a single `test_id`.
+- `all_history`: returns the full CI history map for the suite.
+- `get_acceptance_criteria`: fetches the acceptance criteria for a project (test-management source).
+- `get_known_issues`: fetches known issues / flaky-test list for a project.
+- `validate`: syntax/import-checks generated test code in an isolated sandbox (never runs against production).
+- `upsert`: stores a text + metadata record in the local vector store for later retrieval.
+- `query`: semantic top-k retrieval of prior-run context from the vector store.
+- `call_tool`: universal tool wrapper — every external/tool/SDK/file/HTTP call is routed through it with retries, backoff, and degraded-mode error capture.
 
-```bash
-pip install -r requirements.txt
-# create a .env with GEMINI_API_KEY (optional — runs offline without it)
-echo "GEMINI_API_KEY=your-key-here" > .env
-python main.py --suite sample_data/sample_suite --goal speed
-```
+## Workflow
+The analysis spine is linear with three human-in-the-loop gates and two bounded loops. First `intake` normalises the suite; then `coverage` maps tests to acceptance criteria and finds gaps; `redundancy` flags near-duplicates, flaky, and slow tests; `retrieval` pulls prior-run memory; and `scoring` rates six health dimensions (LLM judgement with a deterministic offline fallback). The graph then hits **HITL checkpoint 1 (approve_removals)**, pausing until a human decides which flaky/duplicate tests may be quarantined/merged/removed — risk-area tests are pinned as protected and are never eligible.
 
-See **[docs/INSTALL.md](docs/INSTALL.md)** for the full, copy-paste setup (prerequisites,
-virtualenv, env vars, sample data, first run, and common-error fixes).
+Next, `prioritisation` re-tiers the surviving suite into smoke/regression/full. A real **coverage-floor gate** node then checks the projected coverage of the proposed change set: if it would fall below the coverage target, it routes to `revise` and loops back, and only once the change set clears the floor does it proceed to **HITL checkpoint 2 (approve_ranking)**.
 
-## Documentation
+After the ranking is approved, `gap_generation` drafts tests for the real gaps (LLM). Each draft goes to `validation`, which syntax/import-checks it in the sandbox; if validation fails, it loops back to `gap_generation` and retries **up to 3 times (MAX_GEN_RETRIES)**, after which `drop_failing` discards any still-invalid drafts so the run always terminates. The surviving drafts reach **HITL checkpoint 3 (approve_tests)**, where a human accepts which generated tests enter the plan. Finally `assemble` builds the side-by-side optimised plan and `report` renders the four JSON deliverables, writes outcomes to long-term memory, and the graph reaches END. In `automated` run mode the HITL checkpoints auto-resolve; in `interactive` mode they block for a decision.
 
-| Document | What it covers |
-|----------|----------------|
-| [docs/AGENT_SPEC.md](docs/AGENT_SPEC.md) | Full design, architecture, ADLC phases, Mermaid diagram, node specs, safety controls |
-| [docs/CLAUDE.md](docs/CLAUDE.md) | Guide for AI coding assistants — rules, conventions, file map |
-| [docs/PROJECT_HANDOFF.md](docs/PROJECT_HANDOFF.md) | Phase-by-phase build state and how to resume |
-| [docs/INSTALL.md](docs/INSTALL.md) | Full installation guide |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Every config knob explained + tuning guide |
-| [docs/OUTPUTS.md](docs/OUTPUTS.md) | Output format reference for the four deliverables |
-| [docs/STRUCTURE.md](docs/STRUCTURE.md) | Annotated file map — every file, one line each |
+## State
+- `project_id` (str): memory key for long-term store lookups and per-project decisions.
+- `suite_path` (str): filesystem path to the test suite that intake parses.
+- `raw_suite` (list[dict]): tests supplied inline as an alternative to `suite_path`.
+- `optimization_goal` (Literal["speed","coverage","reliability","cost"]): the goal driving prioritisation.
+- `coverage_target` (float): the hard coverage floor (default 0.80) enforced by the coverage-floor gate.
+- `risk_areas` (list[str]): areas whose tests are pinned as protected and never removed.
+- `additional_context` (str): reserved free-text context.
+- `run_mode` (Literal["interactive","automated"]): whether HITL checkpoints block or auto-resolve.
+- `normalised_suite` (list[dict]): parsed/normalised suite produced by intake.
+- `conventions` (dict): detected suite style used for gap generation.
+- `coverage_map` (dict): criterion_id → covered test_ids.
+- `projected_coverage` (float): coverage if the proposed changes were applied (recomputed on revise).
+- `coverage_gaps` (list[dict]): uncovered paths/criteria ranked by risk.
+- `redundancy_flags` (list[dict]): near-duplicate merge candidates.
+- `flakiness_flags` (list[dict]): flaky tests with supporting evidence.
+- `slow_flags` (list[dict]): tests over the slow-time threshold.
+- `retrieved_context` (list[dict]): RAG results with relevance scores.
+- `scorecard` (dict): per-dimension score + reason + action across six health dimensions.
+- `approved_removals` (list[str]): tests a human approved for quarantine/merge/removal (HITL 1).
+- `approved_priority` (dict): the tiering a human approved (HITL 2).
+- `approved_generated_tests` (list[dict]): generated drafts a human accepted (HITL 3).
+- `gen_retry_count` (int): bounds the validation→gap_generation loop (caps at MAX_GEN_RETRIES).
+- `revise_count` (int): bounds the coverage-floor revise loop (defensive).
+- `validation_passed` (bool): set by validation, read by the post-validation router.
+- `needs_regen` (bool): informational flag from gap generation / validation.
+- `tool_errors` (Annotated[list[dict], add]): append-only log of degraded/failed tool calls.
+- `prioritised_plan` (dict): tiers + ranking + goal from prioritisation.
+- `generated_tests` (list[dict]): drafts plus validity from gap generation/validation.
+- `final_outputs` (dict): the four deliverables assembled and reported.
+- `audit_log` (Annotated[list[dict], add]): append-only audit trail every node writes to.
 
-**Per-folder READMEs** (this documentation set): [frontend/](frontend/README.md) ·
-[prompts/](prompts/README.md) · [src/](src/README.md) · [src/nodes/](src/nodes/README.md) ·
-[src/tools/](src/tools/README.md) · [src/nlp/](src/nlp/README.md) ·
-[src/memory/](src/memory/README.md) · [src/hitl/](src/hitl/README.md) ·
-[tests/](tests/README.md) · [learning/](learning/README.md) · [logs/](logs/README.md) ·
-[outputs/](outputs/README.md)
+## Configuration
+- Model: `gemini-2.5-flash` (Google Gemini via the `google-genai` SDK; `REASONING_MODEL` and `FAST_MODEL`, both env-overridable).
+- Temperature: default (unset — the SDK default is used; no explicit temperature is configured).
+- Embedding model: `all-MiniLM-L6-v2` (`EMBEDDING_MODEL`, env-overridable).
+- `OFFLINE_MODE`: `1`/`0` — auto-enabled when no `GEMINI_API_KEY` is present; forces deterministic fallbacks with no API calls.
+- `GEMINI_API_KEY` (or `GOOGLE_API_KEY`): enables LLM judgement; optional (runs fully offline without it).
+- `CHECKPOINT_DB`: optional SQLite path for durable, resumable paused runs (in-memory saver otherwise).
+- Thresholds (from `src/config.py`): `MAX_GEN_RETRIES=3`, `DEFAULT_COVERAGE_TARGET=0.80`, `CRITERIA_MATCH_THRESHOLD=0.45`, `DUPLICATE_THRESHOLD=0.80`, `GAP_THRESHOLD=0.45`, `FLAKY_FAIL_RATE=0.10`, `SLOW_TEST_SECONDS=10.0`, `TOOL_RETRIES=3`, `BACKOFF_BASE=2`.
 
----
-
-# Root folder as an architectural unit
-
-## 1. Purpose
-
-The repository root is the **composition layer**: it holds the two entrypoints that wire the
-agent to the outside world (`main.py` for the CLI, `api.py` for HTTP), the dependency and
-test-runner manifests, and the top-level directories that each own one concern. Nothing here
-contains analysis logic — the logic lives in `src/`; the root just *assembles and launches* it.
-
-## 2. Why this folder exists
-
-Every project needs a single front door. The root separates **how you invoke the agent**
-(CLI args, HTTP requests) from **what the agent does** (`src/`), so the same compiled graph can
-be driven from a terminal, a web UI, or a test harness without duplicating logic.
-
-## 3. How it fits into the overall architecture
-
-```
-                        ┌──────────────────────────────────────────┐
-   CLI  ──> main.py ──▶ │                                          │
-                        │   build_graph()  (src/graph.py)           │
- HTTP ──> api.py  ──▶   │   the compiled LangGraph state machine    │──▶ outputs/  (4 JSON files)
-   ▲                    │                                          │──▶ logs/agent.log
-   │                    └──────────────────────────────────────────┘
- frontend/ (React)                     │ reads/writes
-                                       ▼
-                   src/ (state · nodes · tools · nlp · hitl · memory · llm)
-                   prompts/  sample_data/  (inputs)
-```
-
-`main.py` and `api.py` are thin shells over the *same* `build_graph()`. The graph pulls inputs
-from `sample_data/` and `prompts/`, streams progress to `logs/`, and writes deliverables to
-`outputs/`. The `frontend/` talks only to `api.py`.
-
-## 4. Files inside the folder (root-level)
-
-| File | Role |
-|------|------|
-| `main.py` | CLI entrypoint |
-| `api.py` | FastAPI HTTP bridge |
-| `requirements.txt` | Python dependency manifest |
-| `pytest.ini` | pytest discovery/config |
-| `README.md` | this file |
-| `.env` | local secrets/flags (gitignored) |
-| `.gitignore` | excludes venv, caches, logs, outputs, memory, vector DB |
-
-Top-level directories: `src/`, `frontend/`, `prompts/`, `sample_data/`, `tests/`,
-`learning/`, `docs/`, `logs/`, `outputs/`.
-
-## 5. Responsibilities of each file
-
-- **`main.py`** — `initial_state(args)` builds the starting state from CLI args;
-  `run(args)` invokes the graph and, on each `__interrupt__`, calls `_answer_interrupt(payload)`
-  to read a decision from stdin and resumes via `Command(resume=…)`; `write_outputs(outputs, dir)`
-  writes the four JSON deliverables; `main()` wires argparse (`--suite`, `--project`, `--goal`,
-  `--coverage-target`, `--risk-areas`, `--run-mode`).
-- **`api.py`** — one compiled `GRAPH`; `POST /runs` starts a run and **blocks to the next
-  checkpoint**, `POST /runs/{id}/resume` submits a decision (wrapped as `{"__hitl__": …}`),
-  `GET /runs/{id}` returns audit/status, `GET /health` reports liveness. CORS is open to the
-  Vite dev origins. `_package()` shapes each response as `awaiting_approval` or `completed`.
-- **`requirements.txt`** — langgraph, google-genai, fastapi/uvicorn, pydantic, python-dotenv,
-  pytest, plus optional sentence-transformers/spacy/chromadb/langgraph-checkpoint-sqlite.
-- **`pytest.ini`** — `pythonpath = .` (so `import src.*` works), `testpaths = tests`, and a
-  collection filter so the `TestOptimiserState` TypedDict is not mistaken for a test class.
-
-## 6. Inputs
-
-- CLI args (`main.py`) or JSON request bodies (`api.py`).
-- Environment via `.env` (`GEMINI_API_KEY`, feature flags, `CHECKPOINT_DB`).
-- Fixture data under `sample_data/` (suite, CI history, criteria) and templates under `prompts/`.
-
-## 7. Outputs
-
-- Four JSON deliverables in `outputs/` (`scorecard.json`, `coverage_gap_map.json`,
-  `redundancy_flakiness_report.json`, `optimised_plan.json`).
-- Rotating `logs/agent.log`.
-- HTTP JSON responses (`api.py`), console summary (`main.py`).
-
-## 8. Dependencies
-
-`langgraph` (orchestration), `google-genai` (Gemini), `fastapi`/`uvicorn` (HTTP),
-`pydantic` (request models), `python-dotenv`, and the whole `src/` package.
-
-## 9. Which folders call/use it
-
-- `frontend/` calls `api.py` over HTTP.
-- Operators/CI call `main.py` and `tests/`.
-
-## 10. Which folders it calls/uses
-
-`src/` (via `build_graph`), which in turn reaches `prompts/`, `sample_data/`, `logs/`,
-`outputs/`, and the long-term memory store.
-
-## 11. Runtime execution flow
-
-```
-CLI:   main.py → initial_state → graph.invoke → [interrupt → stdin → resume]×3 → write_outputs → print summary
-HTTP:  POST /runs → graph.invoke (blocks to checkpoint) → awaiting_approval
-       POST /runs/{id}/resume → graph.invoke (Command(resume)) → next checkpoint … → completed(outputs)
-```
-
-## 12. Common debugging locations
-
-- **Run won't start / import errors** → `pytest.ini` pythonpath, virtualenv, `requirements.txt`.
-- **No LLM / everything "degraded"** → `.env` `GEMINI_API_KEY`, `src/config.py` `OFFLINE_MODE`.
-- **HITL never resumes over HTTP** → the `{"__hitl__": …}` envelope in `api.py` / `src/hitl/interrupts.py`.
-- **Outputs missing** → `write_outputs()` in `main.py`; `report_node` in `src/nodes/report.py`.
-- **Trace what happened** → `logs/agent.log` and the `audit_log` in each response.
-
-## Project structure
-
-```
-test-optimiser-agent/
-├── README.md                  ← you are here (entry point + root README)
-├── main.py                    ← thin CLI entrypoint
-├── api.py                     ← thin FastAPI bridge (HTTP ↔ graph)
-├── requirements.txt
-├── pytest.ini
-├── .env                       ← your local config/secrets (gitignored)
-├── docs/                      ← all project documentation
-├── src/                       ← all agent logic (state, graph, nodes, tools, nlp, hitl, memory)
-├── prompts/                   ← LLM prompt templates (scoring, prioritisation, generation)
-├── sample_data/               ← generator + synthetic suite/CI/criteria + golden eval set
-├── learning/                  ← 3 standalone LangGraph examples (learn the mechanics)
-├── tests/                     ← unit + e2e (coverage-gate, validation-loop, golden-set)
-├── frontend/                  ← React demo UI (Vite + TypeScript)
-├── logs/                      ← rotating agent.log
-└── outputs/                   ← the four written deliverables
-```
+## Dependencies
+- `google-genai` — Gemini LLM client (scoring rationale, gap-test drafting).
+- `sentence-transformers` — semantic embeddings / similarity (optional).
+- `spacy` — tokenise, lemmatise, NER, keyword extraction (optional).
+- `scikit-learn` — clustering + TF-IDF for log triage.
+- `chromadb` — local vector store for retrieval (optional).
+- `pydantic` — request/response models for the HTTP bridge.
+- `python-dotenv` — loads `.env` configuration.
+- `fastapi` — HTTP bridge (`POST /runs`, `POST /runs/{id}/resume`, `GET /runs/{id}`, `GET /health`).
+- `uvicorn` — ASGI server for the API.
+- `pytest` — runtime dependency for sandbox validation and the `tests/` suite.
+- `langgraph-checkpoint-sqlite` — optional; only needed when `CHECKPOINT_DB` is set for durable runs.
