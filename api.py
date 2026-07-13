@@ -57,7 +57,7 @@ app = FastAPI(title="Test Optimiser Agent", version="1.0")
 # its fetch/XHR unless this backend explicitly allows that origin via CORS.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Vite dev
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173","http://localhost:5175"],  # Vite dev
     allow_methods=["*"],  # demo backend — accept any method from the allowed origins
     allow_headers=["*"],  # ...and any header (e.g. Content-Type for JSON bodies)
 )

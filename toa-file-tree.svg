@@ -1,0 +1,563 @@
+<svg width="1000" height="3550" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #2c3e50; }
+      .subtitle { font-family: 'Arial', sans-serif; font-size: 12px; fill: #7f8c8d; }
+      .folder-text { font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; fill: #27ae60; font-weight: bold; }
+      .file-text { font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; fill: #3498db; }
+      .icon { font-family: 'Arial', sans-serif; font-size: 16px; }
+      .line { stroke: #bdc3c7; stroke-width: 1.5; }
+      .background { fill: #f8f9fa; }
+      .header-bg { fill: #ecf0f1; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="3550" class="background"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1000" height="60" class="header-bg"/>
+  <text x="20" y="25" class="title">📁 File Tree: test-optimiser-agent</text>
+  <text x="20" y="45" class="subtitle">Generated: 7/13/2026, 1:04:01 PM | FileTree Pro Extension</text>
+
+  <!-- Tree Structure -->
+    <line x1="15" y1="80" x2="25" y2="80" class="line"/>
+    <text x="30" y="85" class="icon">📁</text>
+    <text x="55" y="85" class="folder-text">docs/</text>
+    <line x1="45" y1="100" x2="45" y2="110" class="line"/>
+    <line x1="45" y1="110" x2="55" y2="110" class="line"/>
+    <text x="60" y="115" class="icon">📁</text>
+    <text x="85" y="115" class="folder-text">architecture/</text>
+    <line x1="75" y1="130" x2="75" y2="140" class="line"/>
+    <line x1="75" y1="140" x2="85" y2="140" class="line"/>
+    <text x="90" y="145" class="icon">📝</text>
+    <text x="115" y="145" class="file-text">ARCHITECTURE_DETAILED.md</text>
+    <line x1="75" y1="165" x2="75" y2="175" class="line"/>
+    <line x1="75" y1="175" x2="85" y2="175" class="line"/>
+    <text x="90" y="180" class="icon">📝</text>
+    <text x="115" y="180" class="file-text">DATA_FLOW.md</text>
+    <line x1="75" y1="200" x2="75" y2="210" class="line"/>
+    <line x1="75" y1="210" x2="85" y2="210" class="line"/>
+    <text x="90" y="215" class="icon">📝</text>
+    <text x="115" y="215" class="file-text">EXECUTION_FLOW.md</text>
+    <line x1="75" y1="235" x2="75" y2="245" class="line"/>
+    <line x1="75" y1="245" x2="85" y2="245" class="line"/>
+    <text x="90" y="250" class="icon">📝</text>
+    <text x="115" y="250" class="file-text">FUNCTION_CALL_MAP.md</text>
+    <line x1="75" y1="270" x2="75" y2="280" class="line"/>
+    <line x1="75" y1="280" x2="85" y2="280" class="line"/>
+    <text x="90" y="285" class="icon">📝</text>
+    <text x="115" y="285" class="file-text">STATE_FLOW.md</text>
+    <line x1="75" y1="305" x2="75" y2="315" class="line"/>
+    <line x1="75" y1="315" x2="85" y2="315" class="line"/>
+    <text x="90" y="320" class="icon">🖼️</text>
+    <text x="115" y="320" class="file-text">architecture.svg</text>
+    <line x1="45" y1="375" x2="45" y2="385" class="line"/>
+    <line x1="45" y1="385" x2="55" y2="385" class="line"/>
+    <text x="60" y="390" class="icon">📝</text>
+    <text x="85" y="390" class="file-text">AGENT_SPEC.md</text>
+    <line x1="45" y1="410" x2="45" y2="420" class="line"/>
+    <line x1="45" y1="420" x2="55" y2="420" class="line"/>
+    <text x="60" y="425" class="icon">📝</text>
+    <text x="85" y="425" class="file-text">CLAUDE.md</text>
+    <line x1="45" y1="445" x2="45" y2="455" class="line"/>
+    <line x1="45" y1="455" x2="55" y2="455" class="line"/>
+    <text x="60" y="460" class="icon">📝</text>
+    <text x="85" y="460" class="file-text">CONFIGURATION.md</text>
+    <line x1="45" y1="480" x2="45" y2="490" class="line"/>
+    <line x1="45" y1="490" x2="55" y2="490" class="line"/>
+    <text x="60" y="495" class="icon">📝</text>
+    <text x="85" y="495" class="file-text">INSTALL.md</text>
+    <line x1="45" y1="515" x2="45" y2="525" class="line"/>
+    <line x1="45" y1="525" x2="55" y2="525" class="line"/>
+    <text x="60" y="530" class="icon">📝</text>
+    <text x="85" y="530" class="file-text">OUTPUTS.md</text>
+    <line x1="45" y1="550" x2="45" y2="560" class="line"/>
+    <line x1="45" y1="560" x2="55" y2="560" class="line"/>
+    <text x="60" y="565" class="icon">📝</text>
+    <text x="85" y="565" class="file-text">PROJECT_HANDOFF.md</text>
+    <line x1="45" y1="585" x2="45" y2="595" class="line"/>
+    <line x1="45" y1="595" x2="55" y2="595" class="line"/>
+    <text x="60" y="600" class="icon">📝</text>
+    <text x="85" y="600" class="file-text">REPOSITORY_STRUCTURE.md</text>
+    <line x1="45" y1="620" x2="45" y2="630" class="line"/>
+    <line x1="45" y1="630" x2="55" y2="630" class="line"/>
+    <text x="60" y="635" class="icon">📝</text>
+    <text x="85" y="635" class="file-text">TROUBLESHOOTING_PIP.md</text>
+    <line x1="15" y1="700" x2="25" y2="700" class="line"/>
+    <text x="30" y="705" class="icon">📁</text>
+    <text x="55" y="705" class="folder-text">frontend/</text>
+    <line x1="45" y1="720" x2="45" y2="730" class="line"/>
+    <line x1="45" y1="730" x2="55" y2="730" class="line"/>
+    <text x="60" y="735" class="icon">📁</text>
+    <text x="85" y="735" class="folder-text">public/</text>
+    <line x1="75" y1="750" x2="75" y2="760" class="line"/>
+    <line x1="75" y1="760" x2="85" y2="760" class="line"/>
+    <text x="90" y="765" class="icon">🖼️</text>
+    <text x="115" y="765" class="file-text">favicon.svg</text>
+    <line x1="75" y1="785" x2="75" y2="795" class="line"/>
+    <line x1="75" y1="795" x2="85" y2="795" class="line"/>
+    <text x="90" y="800" class="icon">🖼️</text>
+    <text x="115" y="800" class="file-text">icons.svg</text>
+    <line x1="45" y1="855" x2="45" y2="865" class="line"/>
+    <line x1="45" y1="865" x2="55" y2="865" class="line"/>
+    <text x="60" y="870" class="icon">📁</text>
+    <text x="85" y="870" class="folder-text">src/</text>
+    <line x1="75" y1="885" x2="75" y2="895" class="line"/>
+    <line x1="75" y1="895" x2="85" y2="895" class="line"/>
+    <text x="90" y="900" class="icon">📁</text>
+    <text x="115" y="900" class="folder-text">assets/</text>
+    <line x1="105" y1="915" x2="105" y2="925" class="line"/>
+    <line x1="105" y1="925" x2="115" y2="925" class="line"/>
+    <text x="120" y="930" class="icon">🖼️</text>
+    <text x="145" y="930" class="file-text">hero.png</text>
+    <line x1="105" y1="950" x2="105" y2="960" class="line"/>
+    <line x1="105" y1="960" x2="115" y2="960" class="line"/>
+    <text x="120" y="965" class="icon">🖼️</text>
+    <text x="145" y="965" class="file-text">react.svg</text>
+    <line x1="105" y1="985" x2="105" y2="995" class="line"/>
+    <line x1="105" y1="995" x2="115" y2="995" class="line"/>
+    <text x="120" y="1000" class="icon">🖼️</text>
+    <text x="145" y="1000" class="file-text">vite.svg</text>
+    <line x1="75" y1="1055" x2="75" y2="1065" class="line"/>
+    <line x1="75" y1="1065" x2="85" y2="1065" class="line"/>
+    <text x="90" y="1070" class="icon">📁</text>
+    <text x="115" y="1070" class="folder-text">components/</text>
+    <line x1="105" y1="1085" x2="105" y2="1095" class="line"/>
+    <line x1="105" y1="1095" x2="115" y2="1095" class="line"/>
+    <text x="120" y="1100" class="icon">📁</text>
+    <text x="145" y="1100" class="folder-text">hitl/</text>
+    <line x1="135" y1="1115" x2="135" y2="1125" class="line"/>
+    <line x1="135" y1="1125" x2="145" y2="1125" class="line"/>
+    <text x="150" y="1130" class="icon">📄</text>
+    <text x="175" y="1130" class="file-text">ApproveRanking.tsx</text>
+    <line x1="135" y1="1150" x2="135" y2="1160" class="line"/>
+    <line x1="135" y1="1160" x2="145" y2="1160" class="line"/>
+    <text x="150" y="1165" class="icon">📄</text>
+    <text x="175" y="1165" class="file-text">ApproveRemovals.tsx</text>
+    <line x1="135" y1="1185" x2="135" y2="1195" class="line"/>
+    <line x1="135" y1="1195" x2="145" y2="1195" class="line"/>
+    <text x="150" y="1200" class="icon">📄</text>
+    <text x="175" y="1200" class="file-text">ApproveTests.tsx</text>
+    <line x1="105" y1="1255" x2="105" y2="1265" class="line"/>
+    <line x1="105" y1="1265" x2="115" y2="1265" class="line"/>
+    <text x="120" y="1270" class="icon">📁</text>
+    <text x="145" y="1270" class="folder-text">results/</text>
+    <line x1="135" y1="1285" x2="135" y2="1295" class="line"/>
+    <line x1="135" y1="1295" x2="145" y2="1295" class="line"/>
+    <text x="150" y="1300" class="icon">📄</text>
+    <text x="175" y="1300" class="file-text">CoverageMap.tsx</text>
+    <line x1="135" y1="1320" x2="135" y2="1330" class="line"/>
+    <line x1="135" y1="1330" x2="145" y2="1330" class="line"/>
+    <text x="150" y="1335" class="icon">📄</text>
+    <text x="175" y="1335" class="file-text">HealthScorecard.tsx</text>
+    <line x1="135" y1="1355" x2="135" y2="1365" class="line"/>
+    <line x1="135" y1="1365" x2="145" y2="1365" class="line"/>
+    <text x="150" y="1370" class="icon">📄</text>
+    <text x="175" y="1370" class="file-text">OptimisedPlan.tsx</text>
+    <line x1="135" y1="1390" x2="135" y2="1400" class="line"/>
+    <line x1="135" y1="1400" x2="145" y2="1400" class="line"/>
+    <text x="150" y="1405" class="icon">📄</text>
+    <text x="175" y="1405" class="file-text">RedundancyReport.tsx</text>
+    <line x1="135" y1="1425" x2="135" y2="1435" class="line"/>
+    <line x1="135" y1="1435" x2="145" y2="1435" class="line"/>
+    <text x="150" y="1440" class="icon">📄</text>
+    <text x="175" y="1440" class="file-text">ResultsTabs.tsx</text>
+    <line x1="105" y1="1495" x2="105" y2="1505" class="line"/>
+    <line x1="105" y1="1505" x2="115" y2="1505" class="line"/>
+    <text x="120" y="1510" class="icon">📄</text>
+    <text x="145" y="1510" class="file-text">AuditLog.tsx</text>
+    <line x1="105" y1="1530" x2="105" y2="1540" class="line"/>
+    <line x1="105" y1="1540" x2="115" y2="1540" class="line"/>
+    <text x="120" y="1545" class="icon">📄</text>
+    <text x="145" y="1545" class="file-text">DegradedBanner.tsx</text>
+    <line x1="105" y1="1565" x2="105" y2="1575" class="line"/>
+    <line x1="105" y1="1575" x2="115" y2="1575" class="line"/>
+    <text x="120" y="1580" class="icon">📄</text>
+    <text x="145" y="1580" class="file-text">InputPanel.tsx</text>
+    <line x1="75" y1="1635" x2="75" y2="1645" class="line"/>
+    <line x1="75" y1="1645" x2="85" y2="1645" class="line"/>
+    <text x="90" y="1650" class="icon">🎨</text>
+    <text x="115" y="1650" class="file-text">App.css</text>
+    <line x1="75" y1="1670" x2="75" y2="1680" class="line"/>
+    <line x1="75" y1="1680" x2="85" y2="1680" class="line"/>
+    <text x="90" y="1685" class="icon">📄</text>
+    <text x="115" y="1685" class="file-text">App.tsx</text>
+    <line x1="75" y1="1705" x2="75" y2="1715" class="line"/>
+    <line x1="75" y1="1715" x2="85" y2="1715" class="line"/>
+    <text x="90" y="1720" class="icon">📄</text>
+    <text x="115" y="1720" class="file-text">api.ts</text>
+    <line x1="75" y1="1740" x2="75" y2="1750" class="line"/>
+    <line x1="75" y1="1750" x2="85" y2="1750" class="line"/>
+    <text x="90" y="1755" class="icon">🎨</text>
+    <text x="115" y="1755" class="file-text">index.css</text>
+    <line x1="75" y1="1775" x2="75" y2="1785" class="line"/>
+    <line x1="75" y1="1785" x2="85" y2="1785" class="line"/>
+    <text x="90" y="1790" class="icon">📄</text>
+    <text x="115" y="1790" class="file-text">main.tsx</text>
+    <line x1="75" y1="1810" x2="75" y2="1820" class="line"/>
+    <line x1="75" y1="1820" x2="85" y2="1820" class="line"/>
+    <text x="90" y="1825" class="icon">📄</text>
+    <text x="115" y="1825" class="file-text">types.ts</text>
+    <line x1="45" y1="1880" x2="45" y2="1890" class="line"/>
+    <line x1="45" y1="1890" x2="55" y2="1890" class="line"/>
+    <text x="60" y="1895" class="icon">⚙️</text>
+    <text x="85" y="1895" class="file-text">.gitignore</text>
+    <line x1="45" y1="1915" x2="45" y2="1925" class="line"/>
+    <line x1="45" y1="1925" x2="55" y2="1925" class="line"/>
+    <text x="60" y="1930" class="icon">📝</text>
+    <text x="85" y="1930" class="file-text">README.md</text>
+    <line x1="45" y1="1950" x2="45" y2="1960" class="line"/>
+    <line x1="45" y1="1960" x2="55" y2="1960" class="line"/>
+    <text x="60" y="1965" class="icon">📄</text>
+    <text x="85" y="1965" class="file-text">eslint.config.js</text>
+    <line x1="45" y1="1985" x2="45" y2="1995" class="line"/>
+    <line x1="45" y1="1995" x2="55" y2="1995" class="line"/>
+    <text x="60" y="2000" class="icon">🌐</text>
+    <text x="85" y="2000" class="file-text">index.html</text>
+    <line x1="45" y1="2020" x2="45" y2="2030" class="line"/>
+    <line x1="45" y1="2030" x2="55" y2="2030" class="line"/>
+    <text x="60" y="2035" class="icon">⚙️</text>
+    <text x="85" y="2035" class="file-text">package-lock.json</text>
+    <line x1="45" y1="2055" x2="45" y2="2065" class="line"/>
+    <line x1="45" y1="2065" x2="55" y2="2065" class="line"/>
+    <text x="60" y="2070" class="icon">⚙️</text>
+    <text x="85" y="2070" class="file-text">package.json</text>
+    <line x1="45" y1="2090" x2="45" y2="2100" class="line"/>
+    <line x1="45" y1="2100" x2="55" y2="2100" class="line"/>
+    <text x="60" y="2105" class="icon">⚙️</text>
+    <text x="85" y="2105" class="file-text">tsconfig.app.json</text>
+    <line x1="45" y1="2125" x2="45" y2="2135" class="line"/>
+    <line x1="45" y1="2135" x2="55" y2="2135" class="line"/>
+    <text x="60" y="2140" class="icon">⚙️</text>
+    <text x="85" y="2140" class="file-text">tsconfig.json</text>
+    <line x1="45" y1="2160" x2="45" y2="2170" class="line"/>
+    <line x1="45" y1="2170" x2="55" y2="2170" class="line"/>
+    <text x="60" y="2175" class="icon">⚙️</text>
+    <text x="85" y="2175" class="file-text">tsconfig.node.json</text>
+    <line x1="45" y1="2195" x2="45" y2="2205" class="line"/>
+    <line x1="45" y1="2205" x2="55" y2="2205" class="line"/>
+    <text x="60" y="2210" class="icon">📄</text>
+    <text x="85" y="2210" class="file-text">vite.config.ts</text>
+    <line x1="15" y1="2275" x2="25" y2="2275" class="line"/>
+    <text x="30" y="2280" class="icon">📁</text>
+    <text x="55" y="2280" class="folder-text">learning/</text>
+    <line x1="45" y1="2295" x2="45" y2="2305" class="line"/>
+    <line x1="45" y1="2305" x2="55" y2="2305" class="line"/>
+    <text x="60" y="2310" class="icon">🐍</text>
+    <text x="85" y="2310" class="file-text">01_counter_graph.py</text>
+    <line x1="45" y1="2330" x2="45" y2="2340" class="line"/>
+    <line x1="45" y1="2340" x2="55" y2="2340" class="line"/>
+    <text x="60" y="2345" class="icon">🐍</text>
+    <text x="85" y="2345" class="file-text">02_conditional_branch.py</text>
+    <line x1="45" y1="2365" x2="45" y2="2375" class="line"/>
+    <line x1="45" y1="2375" x2="55" y2="2375" class="line"/>
+    <text x="60" y="2380" class="icon">🐍</text>
+    <text x="85" y="2380" class="file-text">03_interrupt_resume.py</text>
+    <line x1="45" y1="2400" x2="45" y2="2410" class="line"/>
+    <line x1="45" y1="2410" x2="55" y2="2410" class="line"/>
+    <text x="60" y="2415" class="icon">📝</text>
+    <text x="85" y="2415" class="file-text">README.md</text>
+    <line x1="15" y1="2480" x2="25" y2="2480" class="line"/>
+    <text x="30" y="2485" class="icon">📁</text>
+    <text x="55" y="2485" class="folder-text">prompts/</text>
+    <line x1="45" y1="2500" x2="45" y2="2510" class="line"/>
+    <line x1="45" y1="2510" x2="55" y2="2510" class="line"/>
+    <text x="60" y="2515" class="icon">📝</text>
+    <text x="85" y="2515" class="file-text">README.md</text>
+    <line x1="45" y1="2535" x2="45" y2="2545" class="line"/>
+    <line x1="45" y1="2545" x2="55" y2="2545" class="line"/>
+    <text x="60" y="2550" class="icon">📝</text>
+    <text x="85" y="2550" class="file-text">gap_generation_prompt.md</text>
+    <line x1="45" y1="2570" x2="45" y2="2580" class="line"/>
+    <line x1="45" y1="2580" x2="55" y2="2580" class="line"/>
+    <text x="60" y="2585" class="icon">📝</text>
+    <text x="85" y="2585" class="file-text">prioritisation_prompt.md</text>
+    <line x1="45" y1="2605" x2="45" y2="2615" class="line"/>
+    <line x1="45" y1="2615" x2="55" y2="2615" class="line"/>
+    <text x="60" y="2620" class="icon">📝</text>
+    <text x="85" y="2620" class="file-text">scoring_prompt.md</text>
+    <line x1="15" y1="2685" x2="25" y2="2685" class="line"/>
+    <text x="30" y="2690" class="icon">📁</text>
+    <text x="55" y="2690" class="folder-text">sample_data/</text>
+    <line x1="45" y1="2705" x2="45" y2="2715" class="line"/>
+    <line x1="45" y1="2715" x2="55" y2="2715" class="line"/>
+    <text x="60" y="2720" class="icon">📁</text>
+    <text x="85" y="2720" class="folder-text">sample_suite/</text>
+    <line x1="75" y1="2735" x2="75" y2="2745" class="line"/>
+    <line x1="75" y1="2745" x2="85" y2="2745" class="line"/>
+    <text x="90" y="2750" class="icon">🐍</text>
+    <text x="115" y="2750" class="file-text">test_account.py</text>
+    <line x1="75" y1="2770" x2="75" y2="2780" class="line"/>
+    <line x1="75" y1="2780" x2="85" y2="2780" class="line"/>
+    <text x="90" y="2785" class="icon">🐍</text>
+    <text x="115" y="2785" class="file-text">test_auth.py</text>
+    <line x1="75" y1="2805" x2="75" y2="2815" class="line"/>
+    <line x1="75" y1="2815" x2="85" y2="2815" class="line"/>
+    <text x="90" y="2820" class="icon">🐍</text>
+    <text x="115" y="2820" class="file-text">test_cart.py</text>
+    <line x1="75" y1="2840" x2="75" y2="2850" class="line"/>
+    <line x1="75" y1="2850" x2="85" y2="2850" class="line"/>
+    <text x="90" y="2855" class="icon">🐍</text>
+    <text x="115" y="2855" class="file-text">test_checkout.py</text>
+    <line x1="75" y1="2875" x2="75" y2="2885" class="line"/>
+    <line x1="75" y1="2885" x2="85" y2="2885" class="line"/>
+    <text x="90" y="2890" class="icon">🐍</text>
+    <text x="115" y="2890" class="file-text">test_search.py</text>
+    <line x1="45" y1="2945" x2="45" y2="2955" class="line"/>
+    <line x1="45" y1="2955" x2="55" y2="2955" class="line"/>
+    <text x="60" y="2960" class="icon">📝</text>
+    <text x="85" y="2960" class="file-text">README.md</text>
+    <line x1="45" y1="2980" x2="45" y2="2990" class="line"/>
+    <line x1="45" y1="2990" x2="55" y2="2990" class="line"/>
+    <text x="60" y="2995" class="icon">⚙️</text>
+    <text x="85" y="2995" class="file-text">expected_findings.json</text>
+    <line x1="45" y1="3015" x2="45" y2="3025" class="line"/>
+    <line x1="45" y1="3025" x2="55" y2="3025" class="line"/>
+    <text x="60" y="3030" class="icon">🐍</text>
+    <text x="85" y="3030" class="file-text">generate_sample_data.py</text>
+    <line x1="45" y1="3050" x2="45" y2="3060" class="line"/>
+    <line x1="45" y1="3060" x2="55" y2="3060" class="line"/>
+    <text x="60" y="3065" class="icon">⚙️</text>
+    <text x="85" y="3065" class="file-text">mock_ci_history.json</text>
+    <line x1="45" y1="3085" x2="45" y2="3095" class="line"/>
+    <line x1="45" y1="3095" x2="55" y2="3095" class="line"/>
+    <text x="60" y="3100" class="icon">⚙️</text>
+    <text x="85" y="3100" class="file-text">sample_criteria.json</text>
+    <line x1="15" y1="3165" x2="25" y2="3165" class="line"/>
+    <text x="30" y="3170" class="icon">📁</text>
+    <text x="55" y="3170" class="folder-text">src/</text>
+    <line x1="45" y1="3185" x2="45" y2="3195" class="line"/>
+    <line x1="45" y1="3195" x2="55" y2="3195" class="line"/>
+    <text x="60" y="3200" class="icon">📁</text>
+    <text x="85" y="3200" class="folder-text">hitl/</text>
+    <line x1="75" y1="3215" x2="75" y2="3225" class="line"/>
+    <line x1="75" y1="3225" x2="85" y2="3225" class="line"/>
+    <text x="90" y="3230" class="icon">📝</text>
+    <text x="115" y="3230" class="file-text">README.md</text>
+    <line x1="75" y1="3250" x2="75" y2="3260" class="line"/>
+    <line x1="75" y1="3260" x2="85" y2="3260" class="line"/>
+    <text x="90" y="3265" class="icon">🐍</text>
+    <text x="115" y="3265" class="file-text">__init__.py</text>
+    <line x1="75" y1="3285" x2="75" y2="3295" class="line"/>
+    <line x1="75" y1="3295" x2="85" y2="3295" class="line"/>
+    <text x="90" y="3300" class="icon">🐍</text>
+    <text x="115" y="3300" class="file-text">interrupts.py</text>
+    <line x1="45" y1="3355" x2="45" y2="3365" class="line"/>
+    <line x1="45" y1="3365" x2="55" y2="3365" class="line"/>
+    <text x="60" y="3370" class="icon">📁</text>
+    <text x="85" y="3370" class="folder-text">memory/</text>
+    <line x1="75" y1="3385" x2="75" y2="3395" class="line"/>
+    <line x1="75" y1="3395" x2="85" y2="3395" class="line"/>
+    <text x="90" y="3400" class="icon">📝</text>
+    <text x="115" y="3400" class="file-text">README.md</text>
+    <line x1="75" y1="3420" x2="75" y2="3430" class="line"/>
+    <line x1="75" y1="3430" x2="85" y2="3430" class="line"/>
+    <text x="90" y="3435" class="icon">🐍</text>
+    <text x="115" y="3435" class="file-text">__init__.py</text>
+    <line x1="75" y1="3455" x2="75" y2="3465" class="line"/>
+    <line x1="75" y1="3465" x2="85" y2="3465" class="line"/>
+    <text x="90" y="3470" class="icon">🐍</text>
+    <text x="115" y="3470" class="file-text">store.py</text>
+    <line x1="45" y1="3525" x2="45" y2="3535" class="line"/>
+    <line x1="45" y1="3535" x2="55" y2="3535" class="line"/>
+    <text x="60" y="3540" class="icon">📁</text>
+    <text x="85" y="3540" class="folder-text">nlp/</text>
+    <line x1="75" y1="3555" x2="75" y2="3565" class="line"/>
+    <line x1="75" y1="3565" x2="85" y2="3565" class="line"/>
+    <text x="90" y="3570" class="icon">📝</text>
+    <text x="115" y="3570" class="file-text">README.md</text>
+    <line x1="75" y1="3590" x2="75" y2="3600" class="line"/>
+    <line x1="75" y1="3600" x2="85" y2="3600" class="line"/>
+    <text x="90" y="3605" class="icon">🐍</text>
+    <text x="115" y="3605" class="file-text">__init__.py</text>
+    <line x1="75" y1="3625" x2="75" y2="3635" class="line"/>
+    <line x1="75" y1="3635" x2="85" y2="3635" class="line"/>
+    <text x="90" y="3640" class="icon">🐍</text>
+    <text x="115" y="3640" class="file-text">clustering.py</text>
+    <line x1="75" y1="3660" x2="75" y2="3670" class="line"/>
+    <line x1="75" y1="3670" x2="85" y2="3670" class="line"/>
+    <text x="90" y="3675" class="icon">🐍</text>
+    <text x="115" y="3675" class="file-text">embeddings.py</text>
+    <line x1="75" y1="3695" x2="75" y2="3705" class="line"/>
+    <line x1="75" y1="3705" x2="85" y2="3705" class="line"/>
+    <text x="90" y="3710" class="icon">🐍</text>
+    <text x="115" y="3710" class="file-text">extraction.py</text>
+    <line x1="75" y1="3730" x2="75" y2="3740" class="line"/>
+    <line x1="75" y1="3740" x2="85" y2="3740" class="line"/>
+    <text x="90" y="3745" class="icon">🐍</text>
+    <text x="115" y="3745" class="file-text">similarity.py</text>
+    <line x1="45" y1="3800" x2="45" y2="3810" class="line"/>
+    <line x1="45" y1="3810" x2="55" y2="3810" class="line"/>
+    <text x="60" y="3815" class="icon">📁</text>
+    <text x="85" y="3815" class="folder-text">nodes/</text>
+    <line x1="75" y1="3830" x2="75" y2="3840" class="line"/>
+    <line x1="75" y1="3840" x2="85" y2="3840" class="line"/>
+    <text x="90" y="3845" class="icon">📝</text>
+    <text x="115" y="3845" class="file-text">README.md</text>
+    <line x1="75" y1="3865" x2="75" y2="3875" class="line"/>
+    <line x1="75" y1="3875" x2="85" y2="3875" class="line"/>
+    <text x="90" y="3880" class="icon">🐍</text>
+    <text x="115" y="3880" class="file-text">__init__.py</text>
+    <line x1="75" y1="3900" x2="75" y2="3910" class="line"/>
+    <line x1="75" y1="3910" x2="85" y2="3910" class="line"/>
+    <text x="90" y="3915" class="icon">🐍</text>
+    <text x="115" y="3915" class="file-text">_coverage_model.py</text>
+    <line x1="75" y1="3935" x2="75" y2="3945" class="line"/>
+    <line x1="75" y1="3945" x2="85" y2="3945" class="line"/>
+    <text x="90" y="3950" class="icon">🐍</text>
+    <text x="115" y="3950" class="file-text">assemble.py</text>
+    <line x1="75" y1="3970" x2="75" y2="3980" class="line"/>
+    <line x1="75" y1="3980" x2="85" y2="3980" class="line"/>
+    <text x="90" y="3985" class="icon">🐍</text>
+    <text x="115" y="3985" class="file-text">coverage.py</text>
+    <line x1="75" y1="4005" x2="75" y2="4015" class="line"/>
+    <line x1="75" y1="4015" x2="85" y2="4015" class="line"/>
+    <text x="90" y="4020" class="icon">🐍</text>
+    <text x="115" y="4020" class="file-text">gap_generation.py</text>
+    <line x1="75" y1="4040" x2="75" y2="4050" class="line"/>
+    <line x1="75" y1="4050" x2="85" y2="4050" class="line"/>
+    <text x="90" y="4055" class="icon">🐍</text>
+    <text x="115" y="4055" class="file-text">intake.py</text>
+    <line x1="75" y1="4075" x2="75" y2="4085" class="line"/>
+    <line x1="75" y1="4085" x2="85" y2="4085" class="line"/>
+    <text x="90" y="4090" class="icon">🐍</text>
+    <text x="115" y="4090" class="file-text">prioritisation.py</text>
+    <line x1="75" y1="4110" x2="75" y2="4120" class="line"/>
+    <line x1="75" y1="4120" x2="85" y2="4120" class="line"/>
+    <text x="90" y="4125" class="icon">🐍</text>
+    <text x="115" y="4125" class="file-text">redundancy.py</text>
+    <line x1="75" y1="4145" x2="75" y2="4155" class="line"/>
+    <line x1="75" y1="4155" x2="85" y2="4155" class="line"/>
+    <text x="90" y="4160" class="icon">🐍</text>
+    <text x="115" y="4160" class="file-text">report.py</text>
+    <line x1="75" y1="4180" x2="75" y2="4190" class="line"/>
+    <line x1="75" y1="4190" x2="85" y2="4190" class="line"/>
+    <text x="90" y="4195" class="icon">🐍</text>
+    <text x="115" y="4195" class="file-text">retrieval.py</text>
+    <line x1="75" y1="4215" x2="75" y2="4225" class="line"/>
+    <line x1="75" y1="4225" x2="85" y2="4225" class="line"/>
+    <text x="90" y="4230" class="icon">🐍</text>
+    <text x="115" y="4230" class="file-text">scoring.py</text>
+    <line x1="75" y1="4250" x2="75" y2="4260" class="line"/>
+    <line x1="75" y1="4260" x2="85" y2="4260" class="line"/>
+    <text x="90" y="4265" class="icon">🐍</text>
+    <text x="115" y="4265" class="file-text">validation.py</text>
+    <line x1="45" y1="4320" x2="45" y2="4330" class="line"/>
+    <line x1="45" y1="4330" x2="55" y2="4330" class="line"/>
+    <text x="60" y="4335" class="icon">📁</text>
+    <text x="85" y="4335" class="folder-text">tools/</text>
+    <line x1="75" y1="4350" x2="75" y2="4360" class="line"/>
+    <line x1="75" y1="4360" x2="85" y2="4360" class="line"/>
+    <text x="90" y="4365" class="icon">📝</text>
+    <text x="115" y="4365" class="file-text">README.md</text>
+    <line x1="75" y1="4385" x2="75" y2="4395" class="line"/>
+    <line x1="75" y1="4395" x2="85" y2="4395" class="line"/>
+    <text x="90" y="4400" class="icon">🐍</text>
+    <text x="115" y="4400" class="file-text">__init__.py</text>
+    <line x1="75" y1="4420" x2="75" y2="4430" class="line"/>
+    <line x1="75" y1="4430" x2="85" y2="4430" class="line"/>
+    <text x="90" y="4435" class="icon">🐍</text>
+    <text x="115" y="4435" class="file-text">ci_history.py</text>
+    <line x1="75" y1="4455" x2="75" y2="4465" class="line"/>
+    <line x1="75" y1="4465" x2="85" y2="4465" class="line"/>
+    <text x="90" y="4470" class="icon">🐍</text>
+    <text x="115" y="4470" class="file-text">coverage_parser.py</text>
+    <line x1="75" y1="4490" x2="75" y2="4500" class="line"/>
+    <line x1="75" y1="4500" x2="85" y2="4500" class="line"/>
+    <text x="90" y="4505" class="icon">🐍</text>
+    <text x="115" y="4505" class="file-text">repo_reader.py</text>
+    <line x1="75" y1="4525" x2="75" y2="4535" class="line"/>
+    <line x1="75" y1="4535" x2="85" y2="4535" class="line"/>
+    <text x="90" y="4540" class="icon">🐍</text>
+    <text x="115" y="4540" class="file-text">sandbox.py</text>
+    <line x1="75" y1="4560" x2="75" y2="4570" class="line"/>
+    <line x1="75" y1="4570" x2="85" y2="4570" class="line"/>
+    <text x="90" y="4575" class="icon">🐍</text>
+    <text x="115" y="4575" class="file-text">test_management.py</text>
+    <line x1="75" y1="4595" x2="75" y2="4605" class="line"/>
+    <line x1="75" y1="4605" x2="85" y2="4605" class="line"/>
+    <text x="90" y="4610" class="icon">🐍</text>
+    <text x="115" y="4610" class="file-text">test_parser.py</text>
+    <line x1="75" y1="4630" x2="75" y2="4640" class="line"/>
+    <line x1="75" y1="4640" x2="85" y2="4640" class="line"/>
+    <text x="90" y="4645" class="icon">🐍</text>
+    <text x="115" y="4645" class="file-text">tool_wrapper.py</text>
+    <line x1="75" y1="4665" x2="75" y2="4675" class="line"/>
+    <line x1="75" y1="4675" x2="85" y2="4675" class="line"/>
+    <text x="90" y="4680" class="icon">🐍</text>
+    <text x="115" y="4680" class="file-text">vector_store.py</text>
+    <line x1="45" y1="4735" x2="45" y2="4745" class="line"/>
+    <line x1="45" y1="4745" x2="55" y2="4745" class="line"/>
+    <text x="60" y="4750" class="icon">📝</text>
+    <text x="85" y="4750" class="file-text">README.md</text>
+    <line x1="45" y1="4770" x2="45" y2="4780" class="line"/>
+    <line x1="45" y1="4780" x2="55" y2="4780" class="line"/>
+    <text x="60" y="4785" class="icon">🐍</text>
+    <text x="85" y="4785" class="file-text">__init__.py</text>
+    <line x1="45" y1="4805" x2="45" y2="4815" class="line"/>
+    <line x1="45" y1="4815" x2="55" y2="4815" class="line"/>
+    <text x="60" y="4820" class="icon">🐍</text>
+    <text x="85" y="4820" class="file-text">config.py</text>
+    <line x1="45" y1="4840" x2="45" y2="4850" class="line"/>
+    <line x1="45" y1="4850" x2="55" y2="4850" class="line"/>
+    <text x="60" y="4855" class="icon">🐍</text>
+    <text x="85" y="4855" class="file-text">graph.py</text>
+    <line x1="45" y1="4875" x2="45" y2="4885" class="line"/>
+    <line x1="45" y1="4885" x2="55" y2="4885" class="line"/>
+    <text x="60" y="4890" class="icon">🐍</text>
+    <text x="85" y="4890" class="file-text">llm.py</text>
+    <line x1="45" y1="4910" x2="45" y2="4920" class="line"/>
+    <line x1="45" y1="4920" x2="55" y2="4920" class="line"/>
+    <text x="60" y="4925" class="icon">🐍</text>
+    <text x="85" y="4925" class="file-text">observability.py</text>
+    <line x1="45" y1="4945" x2="45" y2="4955" class="line"/>
+    <line x1="45" y1="4955" x2="55" y2="4955" class="line"/>
+    <text x="60" y="4960" class="icon">🐍</text>
+    <text x="85" y="4960" class="file-text">state.py</text>
+    <line x1="15" y1="5025" x2="25" y2="5025" class="line"/>
+    <text x="30" y="5030" class="icon">📁</text>
+    <text x="55" y="5030" class="folder-text">tests/</text>
+    <line x1="45" y1="5045" x2="45" y2="5055" class="line"/>
+    <line x1="45" y1="5055" x2="55" y2="5055" class="line"/>
+    <text x="60" y="5060" class="icon">📝</text>
+    <text x="85" y="5060" class="file-text">README.md</text>
+    <line x1="45" y1="5080" x2="45" y2="5090" class="line"/>
+    <line x1="45" y1="5090" x2="55" y2="5090" class="line"/>
+    <text x="60" y="5095" class="icon">🐍</text>
+    <text x="85" y="5095" class="file-text">conftest.py</text>
+    <line x1="45" y1="5115" x2="45" y2="5125" class="line"/>
+    <line x1="45" y1="5125" x2="55" y2="5125" class="line"/>
+    <text x="60" y="5130" class="icon">🐍</text>
+    <text x="85" y="5130" class="file-text">test_coverage_gate.py</text>
+    <line x1="45" y1="5150" x2="45" y2="5160" class="line"/>
+    <line x1="45" y1="5160" x2="55" y2="5160" class="line"/>
+    <text x="60" y="5165" class="icon">🐍</text>
+    <text x="85" y="5165" class="file-text">test_graph_e2e.py</text>
+    <line x1="45" y1="5185" x2="45" y2="5195" class="line"/>
+    <line x1="45" y1="5195" x2="55" y2="5195" class="line"/>
+    <text x="60" y="5200" class="icon">🐍</text>
+    <text x="85" y="5200" class="file-text">test_state.py</text>
+    <line x1="45" y1="5220" x2="45" y2="5230" class="line"/>
+    <line x1="45" y1="5230" x2="55" y2="5230" class="line"/>
+    <text x="60" y="5235" class="icon">🐍</text>
+    <text x="85" y="5235" class="file-text">test_validation_loop.py</text>
+    <line x1="15" y1="5300" x2="25" y2="5300" class="line"/>
+    <text x="30" y="5305" class="icon">⚙️</text>
+    <text x="55" y="5305" class="file-text">.gitignore</text>
+    <line x1="15" y1="5335" x2="25" y2="5335" class="line"/>
+    <text x="30" y="5340" class="icon">📝</text>
+    <text x="55" y="5340" class="file-text">README.md</text>
+    <line x1="15" y1="5370" x2="25" y2="5370" class="line"/>
+    <text x="30" y="5375" class="icon">🐍</text>
+    <text x="55" y="5375" class="file-text">api.py</text>
+    <line x1="15" y1="5405" x2="25" y2="5405" class="line"/>
+    <text x="30" y="5410" class="icon">🐍</text>
+    <text x="55" y="5410" class="file-text">main.py</text>
+    <line x1="15" y1="5440" x2="25" y2="5440" class="line"/>
+    <text x="30" y="5445" class="icon">⚙️</text>
+    <text x="55" y="5445" class="file-text">pytest.ini</text>
+    <line x1="15" y1="5475" x2="25" y2="5475" class="line"/>
+    <text x="30" y="5480" class="icon">📄</text>
+    <text x="55" y="5480" class="file-text">requirements.txt</text>
+</svg>

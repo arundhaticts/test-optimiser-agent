@@ -13,7 +13,7 @@ import type {
   RunSnapshot,
 } from "./types";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "http://127.0.0.1:8002";
 
 const client = axios.create({ baseURL: API_BASE, timeout: 180_000 });
 
