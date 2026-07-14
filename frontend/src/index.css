@@ -1,3 +1,31 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Cognizant Enterprise Digital Engineering — design tokens.
+   Exposed to Tailwind v4 via @theme so utilities like `bg-brand`, `text-hitl`,
+   `border-line` work, AND kept as plain CSS vars (below) so the existing
+   component styles continue to resolve. Both systems share the same values.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-canvas: #0b0f17;
+  --color-surface: #161b22;
+  --color-surface-2: #1c2230;
+  --color-surface-3: #232b3a;
+  --color-line: #2a3242;
+  --color-line-strong: #3b4458;
+  --color-ink: #e8eaf0;
+  --color-ink-2: #b6bdcc;
+  --color-ink-muted: #7d8597;
+  --color-brand: #2f6df6;        /* Cognizant deep blue */
+  --color-brand-2: #5b8cff;
+  --color-success: #34d399;      /* Emerald — validated / target met */
+  --color-warning: #fbbf24;      /* Amber — quarantined / flaky */
+  --color-danger: #f87171;       /* Rose — failure / broken threshold */
+  --color-hitl: #8b5cf6;         /* Deep violet — agent paused, awaiting human */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
 :root {
   --bg: #0d1117;
   --surface: #161b22;
@@ -18,6 +46,8 @@
   --red-d: #7a2330;
   --info: #38bdf8;
   --info-bg: #0e2b3a;
+  --violet: #8b5cf6;
+  --violet-d: #4c2d8f;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.25);
   --radius: 12px;

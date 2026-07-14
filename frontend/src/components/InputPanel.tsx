@@ -201,14 +201,23 @@ export default function InputPanel({
           </label>
 
           <label>
-            Coverage target
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={coveragePct}
-              onChange={(e) => setCoveragePct(Number(e.target.value))}
-            />
+            <span>
+              Coverage target <span className="hint">minimum floor to hold</span>
+            </span>
+            <div className="flex items-center gap-3 pt-1.5">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={coveragePct}
+                onChange={(e) => setCoveragePct(Number(e.target.value))}
+                className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-[var(--surface-3)] accent-[var(--primary)]"
+              />
+              <span className="w-12 text-right font-mono text-sm font-bold text-[var(--green)]">
+                {coveragePct}%
+              </span>
+            </div>
           </label>
 
           <label>
