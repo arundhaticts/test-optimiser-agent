@@ -81,15 +81,28 @@ TOOL_RETRIES = 3
 BACKOFF_BASE = 2                    # exponential backoff: BACKOFF_BASE ** attempt
 
 # --- Models (pulled from env; see .env.example) ---
-# Provider: Google Gemini (Gemini 2.5 Flash). The SDK reads GEMINI_API_KEY (or the
-# legacy GOOGLE_API_KEY) from the environment.
+# Default provider: Google Gemini (Gemini 2.5 Flash). The SDK reads GEMINI_API_KEY (or the
+# legacy GOOGLE_API_KEY) from the environment. A run may override the provider/model per
+# request (api.py RunRequest -> state -> src/llm.py); these are the fallback defaults.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 REASONING_MODEL = os.getenv("REASONING_MODEL", "gemini-2.5-flash")
 FAST_MODEL = os.getenv("FAST_MODEL", "gemini-2.5-flash")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
+# Which provider a run uses when the request doesn't specify one.
+DEFAULT_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")
+
+# Additional providers (opt-in, per-request). Each needs its own key + SDK; when a
+# provider is selected but its key/SDK is missing the run degrades to the deterministic
+# fallback (never crashes). Default model ids are used when the request omits `model`.
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
 # --- Offline demo mode ---
-# When no GEMINI_API_KEY / embedding model is available, the NLP and scoring layers
-# fall back to deterministic logic so the graph still runs end-to-end. A configured
-# key enables the LLM by default; force offline with OFFLINE_MODE=1.
-OFFLINE_MODE = os.getenv("OFFLINE_MODE", "0") == "1" or not GEMINI_API_KEY
+# Force the deterministic (no-LLM) path for EVERY provider with OFFLINE_MODE=1. Note: this
+# is now the *explicit* switch only — it is no longer implied by a missing GEMINI_API_KEY,
+# so an OpenAI/Groq-only setup still works. Per-provider key presence is checked in
+# src/llm.py::llm_available, which keeps the "no key => deterministic" behaviour per provider.
+OFFLINE_MODE = os.getenv("OFFLINE_MODE", "0") == "1"

@@ -17,8 +17,7 @@ Data out: generated_tests, gen_retry_count, needs_regen, tool_errors[+], audit_l
 import json
 import re
 
-from src.config import REASONING_MODEL
-from src.llm import complete, llm_available, load_prompt
+from src.llm import complete, drain_usage, llm_available, load_prompt
 from src.observability import audit
 from src.tools.tool_wrapper import call_tool, tool_error_entry
 
@@ -73,7 +72,8 @@ def _strip_fences(code: str) -> str:
     return (m.group(1) if m else code).strip()
 
 
-def _llm_draft_test(gap: dict, conventions: dict) -> dict:
+def _llm_draft_test(gap: dict, conventions: dict, provider: str | None = None,
+                    model: str | None = None) -> dict:
     """Draft a gap test with the reasoning model; raise so call_tool can degrade.
 
     Purpose: prompt the reasoning model to write a convention-matching test for a gap.
@@ -87,7 +87,7 @@ def _llm_draft_test(gap: dict, conventions: dict) -> dict:
     context = {"criterion_id": gap["criterion_id"], "criterion_text": gap["text"],
                "conventions": conventions}
     prompt = load_prompt("gap_generation_prompt") + json.dumps(context, indent=2)
-    code = _strip_fences(complete(prompt, model=REASONING_MODEL))
+    code = _strip_fences(complete(prompt, provider=provider, model=model))
     # WHY: guard against a non-test response — no test def means degrade to the stub.
     if "def test" not in code:
         from src.tools.tool_wrapper import TransientError
@@ -112,15 +112,17 @@ def gap_generation_node(state) -> dict:
     """
     gaps = state.get("coverage_gaps", [])
     conventions = state.get("conventions", {})
+    provider = state.get("provider")
+    model = state.get("model")
     errors = []
-    use_llm = llm_available()
+    use_llm = llm_available(provider)
 
     generated = []
     # WHY: per gap, prefer the LLM draft; on any LLM failure record a tool_error and fall
     # through to the deterministic stub so every gap still gets a draft.
     for g in gaps:
         if use_llm:
-            result = call_tool(_llm_draft_test, g, conventions)
+            result = call_tool(_llm_draft_test, g, conventions, provider, model)
             if result["ok"]:
                 generated.append(result["data"])
                 continue
@@ -145,4 +147,7 @@ def gap_generation_node(state) -> dict:
     }
     if errors:
         out["tool_errors"] = errors
+    # WHY: attach token usage from the LLM drafts this node made (empty on the
+    # deterministic path) so it accumulates into state["llm_usage"] like audit_log.
+    out["llm_usage"] = drain_usage()
     return out

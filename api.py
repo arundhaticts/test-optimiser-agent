@@ -104,6 +104,11 @@ class RunRequest(BaseModel):
     criteria_path: str | None = None
     ci_history_path: str | None = None
     expected_findings_path: str | None = None
+    # Optional per-run LLM selection (for a benchmarking platform sweeping models). When
+    # omitted/null the run uses the env default provider/model — today's behaviour exactly.
+    # provider: "gemini" (default) | "openai" | "groq"; model: a provider-specific model id.
+    provider: str | None = None
+    model: str | None = None
 
 
 class ResumeRequest(BaseModel):
@@ -167,10 +172,12 @@ def _package(run_id: str, state: dict) -> dict:
         _RUNS[run_id] = {"status": "awaiting_approval", "checkpoint": payload.get("checkpoint")}
         return {"run_id": run_id, "status": "awaiting_approval",
                 "checkpoint": payload.get("checkpoint"), "payload": payload}
-    # WHY: no interrupt => the run finished; mark it completed and return the deliverables.
+    # WHY: no interrupt => the run finished; mark it completed and return the deliverables
+    # plus the per-run LLM usage (empty on a deterministic/offline run). Only on completion.
     _RUNS[run_id] = {"status": "completed", "checkpoint": None}
     return {"run_id": run_id, "status": "completed",
-            "outputs": state.get("final_outputs", {})}
+            "outputs": state.get("final_outputs", {}),
+            "llm_usage": state.get("llm_usage", [])}
 
 
 @app.get("/", include_in_schema=False)
@@ -255,8 +262,15 @@ def start_run(req: RunRequest) -> dict:
         "criteria_path": req.criteria_path,
         "ci_history_path": req.ci_history_path,
         "expected_findings_path": req.expected_findings_path,
+        # WHY: optional per-run LLM selection (None => env default provider/model). Threaded
+        # into scoring / gap-generation, which pass it to src/llm.py::complete.
+        "provider": req.provider,
+        "model": req.model,
         "gen_retry_count": 0,
         "audit_log": [], "tool_errors": [],
+        # WHY: append-only usage trail (like audit_log); nodes append one record per real
+        # LLM call, surfaced on the completed response for cost/token metrics.
+        "llm_usage": [],
     }
     log.info("start run | run_id=%s suite=%s mode=%s", run_id, req.suite_path, req.run_mode)
     state = GRAPH.invoke(initial, config=_config(run_id))

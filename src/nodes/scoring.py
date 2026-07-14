@@ -17,8 +17,7 @@ Data out: scorecard, tool_errors[+], audit_log[+].
 
 import json
 
-from src.config import REASONING_MODEL
-from src.llm import complete, extract_json, llm_available, load_prompt
+from src.llm import complete, drain_usage, extract_json, llm_available, load_prompt
 from src.observability import audit
 from src.tools.tool_wrapper import TransientError, call_tool, tool_error_entry
 
@@ -125,7 +124,7 @@ def _llm_scorecard(state) -> dict:
         "suite_size": len(state.get("normalised_suite", [])),
     }
     prompt = load_prompt("scoring_prompt") + json.dumps(evidence, indent=2)
-    parsed = extract_json(complete(prompt, model=REASONING_MODEL))
+    parsed = extract_json(complete(prompt, provider=state.get("provider"), model=state.get("model")))
     # WHY: strict-JSON guard — if the model didn't return a dict with at least one known
     # dimension, raise TransientError so call_tool degrades to the deterministic rubric.
     if not isinstance(parsed, dict) or not any(d in parsed for d in _DIMENSIONS):
@@ -152,12 +151,16 @@ def scoring_node(state) -> dict:
     # to the deterministic rubric so the run always proceeds (Safety Control #5/#8).
     # When a key is configured, score with the reasoning model; any failure degrades
     # to the deterministic rubric so the run always proceeds (Safety Control #5/#8).
-    if llm_available():
+    if llm_available(state.get("provider")):
         result = call_tool(_llm_scorecard, state)
+        # WHY: capture token usage from every real LLM call this node made (success or a
+        # tokens-spent-but-unusable retry), so the benchmarking client can read it.
+        usage = drain_usage()
         # WHY: LLM succeeded -> use its scorecard.
         if result["ok"]:
             return {
                 "scorecard": result["data"],
+                "llm_usage": usage,
                 "audit_log": [audit("scoring", "scored", method="llm",
                                     dimensions=len(result["data"]))],
             }
@@ -166,6 +169,7 @@ def scoring_node(state) -> dict:
         scorecard = _deterministic_scorecard(state)
         return {
             "scorecard": scorecard,
+            "llm_usage": usage,
             "tool_errors": [tool_error_entry("llm:scoring", result["error"],
                                              "fell back to deterministic rubric")],
             "audit_log": [audit("scoring", "scored", method="deterministic-fallback",

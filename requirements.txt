@@ -1,8 +1,11 @@
 # Core orchestration
 langgraph
 langchain-core
-# LLM provider (Google Gemini — Gemini 2.5 Flash)
+# LLM providers — Gemini (default) + optional OpenAI / Groq (per-request selection)
 google-genai
+openai                     # provider="openai" (needs OPENAI_API_KEY)
+groq                       # provider="groq"   (needs GROQ_API_KEY)
+truststore                 # trust the OS cert store so provider HTTPS works behind corp TLS proxies
 # NLP layer
 sentence-transformers      # semantic embeddings / similarity
 spacy                      # tokenise, lemmatise, NER, keyword extraction

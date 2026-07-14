@@ -40,6 +40,8 @@ class TestOptimiserState(TypedDict, total=False):
     risk_areas: list[str]                 # pins protected tests (via is_protected)
     additional_context: str               # reserved free-text context
     run_mode: Literal["interactive", "automated"]   # webhook/API => automated; read by HITL nodes
+    provider: str                         # optional per-run LLM provider (gemini|openai|groq); None => env default
+    model: str                            # optional per-run model id; None => provider's default model
     criteria_path: str                    # optional path to an uploaded acceptance-criteria JSON (else fixture)
     ci_history_path: str                  # optional path to an uploaded CI-history JSON (else fixture)
     expected_findings_path: str           # optional path to an uploaded expected-findings (golden) JSON;
@@ -76,3 +78,4 @@ class TestOptimiserState(TypedDict, total=False):
 
     # --- Observability (append-only) ---
     audit_log: Annotated[list[dict], add]  # every node appends one+ entries (append-only reducer)
+    llm_usage: Annotated[list[dict], add]  # one record per real LLM call (append-only); [] offline
